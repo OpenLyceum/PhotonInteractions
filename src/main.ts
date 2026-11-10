@@ -21,24 +21,41 @@ import "./brand.js";
 
 import { onReadyToLaunch, PreferencesModel, Sim } from "scenerystack/sim";
 import { Tandem } from "scenerystack/tandem";
+import { AnnihilationScreen } from "./annihilation/AnnihilationScreen.js";
+import { ComptonScreen } from "./compton/ComptonScreen.js";
 import { StringManager } from "./i18n/StringManager.js";
-import { SimPreferencesModel } from "./preferences/SimPreferencesModel.js";
-import { SimPreferencesNode } from "./preferences/SimPreferencesNode.js";
-import SimColors from "./SimColors.js";
-import { SimScreen } from "./sim-screen/SimScreen.js";
+import PhotonInteractionsColors from "./PhotonInteractionsColors.js";
+import { PairProductionScreen } from "./pair-production/PairProductionScreen.js";
+import { PhotonInteractionsPreferencesModel } from "./preferences/PhotonInteractionsPreferencesModel.js";
+import { PhotonInteractionsPreferencesNode } from "./preferences/PhotonInteractionsPreferencesNode.js";
+import { XRayTubeScreen } from "./xray-tube/XRayTubeScreen.js";
 
 onReadyToLaunch(() => {
   const stringManager = StringManager.getInstance();
 
-  // Simulation-specific preferences; initial values come from simQueryParameters.
-  const simPreferences = new SimPreferencesModel(Tandem.ROOT.createTandem("preferences"));
+  // Simulation-specific preferences; initial values come from photonInteractionsQueryParameters.
+  const simPreferences = new PhotonInteractionsPreferencesModel(Tandem.ROOT.createTandem("preferences"));
 
   const screens = [
-    new SimScreen({
-      // The screen name Property updates automatically when the locale changes
-      name: stringManager.getScreenNames().simStringProperty,
-      tandem: Tandem.ROOT.createTandem("simScreen"),
-      backgroundColorProperty: SimColors.backgroundColorProperty,
+    new ComptonScreen({
+      name: stringManager.getScreenNames().comptonStringProperty,
+      tandem: Tandem.ROOT.createTandem("comptonScreen"),
+      backgroundColorProperty: PhotonInteractionsColors.backgroundColorProperty,
+    }),
+    new XRayTubeScreen({
+      name: stringManager.getScreenNames().xrayTubeStringProperty,
+      tandem: Tandem.ROOT.createTandem("xrayTubeScreen"),
+      backgroundColorProperty: PhotonInteractionsColors.backgroundColorProperty,
+    }),
+    new PairProductionScreen({
+      name: stringManager.getScreenNames().pairProductionStringProperty,
+      tandem: Tandem.ROOT.createTandem("pairProductionScreen"),
+      backgroundColorProperty: PhotonInteractionsColors.backgroundColorProperty,
+    }),
+    new AnnihilationScreen({
+      name: stringManager.getScreenNames().annihilationStringProperty,
+      tandem: Tandem.ROOT.createTandem("annihilationScreen"),
+      backgroundColorProperty: PhotonInteractionsColors.backgroundColorProperty,
     }),
   ];
 
@@ -53,7 +70,7 @@ onReadyToLaunch(() => {
       simulationOptions: {
         customPreferences: [
           {
-            createContent: (tandem: Tandem) => new SimPreferencesNode(simPreferences, tandem),
+            createContent: (tandem: Tandem) => new PhotonInteractionsPreferencesNode(simPreferences, tandem),
           },
         ],
       },

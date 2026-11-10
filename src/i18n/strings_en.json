@@ -1,17 +1,55 @@
 {
-  "title": "SceneryStack Template",
+  "title": "Photon Interactions",
   "screens": {
-    "sim": "Sim"
+    "compton": "Compton",
+    "xrayTube": "XRayTube",
+    "pairProduction": "PairProduction",
+    "annihilation": "Annihilation"
   },
   "a11y": {
-    "screenSummary": {
-      "playArea": "The play area shows the main simulation content.",
-      "controlArea": "The control area has a Reset All button that returns the simulation to its starting state.",
-      "interactionHint": "Explore the simulation by interacting with its controls."
+    "compton": {
+      "screenSummary": {
+        "playArea": "The play area shows the main simulation content.",
+        "controlArea": "The control area has a Reset All button that returns the simulation to its starting state.",
+        "interactionHint": "Explore the simulation by interacting with its controls."
+      },
+      "currentDetails": "The simulation is in its initial state.",
+      "controls": {
+        "exampleControl": "Example control"
+      }
     },
-    "currentDetails": "The simulation is in its initial state.",
-    "controls": {
-      "exampleControl": "Example control"
+    "xrayTube": {
+      "screenSummary": {
+        "playArea": "The play area shows the main simulation content.",
+        "controlArea": "The control area has a Reset All button that returns the simulation to its starting state.",
+        "interactionHint": "Explore the simulation by interacting with its controls."
+      },
+      "currentDetails": "The simulation is in its initial state.",
+      "controls": {
+        "exampleControl": "Example control"
+      }
+    },
+    "pairProduction": {
+      "screenSummary": {
+        "playArea": "The play area shows the main simulation content.",
+        "controlArea": "The control area has a Reset All button that returns the simulation to its starting state.",
+        "interactionHint": "Explore the simulation by interacting with its controls."
+      },
+      "currentDetails": "The simulation is in its initial state.",
+      "controls": {
+        "exampleControl": "Example control"
+      }
+    },
+    "annihilation": {
+      "screenSummary": {
+        "playArea": "The play area shows the main simulation content.",
+        "controlArea": "The control area has a Reset All button that returns the simulation to its starting state.",
+        "interactionHint": "Explore the simulation by interacting with its controls."
+      },
+      "currentDetails": "The simulation is in its initial state.",
+      "controls": {
+        "exampleControl": "Example control"
+      }
     }
   },
   "preferences": {
