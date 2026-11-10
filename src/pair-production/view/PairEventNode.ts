@@ -30,7 +30,7 @@ const VERTEX = new Vector2(150, 160);
 const PHOTON_START_X = 12;
 /** Fraction of the animation the photon spends arriving. */
 const ARRIVAL = 0.3;
-const PIXELS_PER_MM = 7;
+const PIXELS_PER_MM = 8;
 const STRAIGHT_TRACK_LENGTH = 230;
 const MAX_TRACK_LENGTH = 420;
 const TRACK_STEP = 1.5;
@@ -83,15 +83,23 @@ export class PairEventNode extends Node {
       allowed: strings.status.allowedStringProperty,
       forbidden: strings.status.forbiddenStringProperty,
     };
-    Multilink.multilink([model.statusProperty, ...Object.values(statusStrings)] as const, (status) => {
-      statusText.string = statusStrings[status].value;
-      statusText.fill =
-        status === "allowed"
-          ? PhotonInteractionsColors.restEnergyColorProperty
-          : PhotonInteractionsColors.limitColorProperty;
-      statusText.right = EVENT_WIDTH - 10;
-      statusText.top = 8;
-    });
+    Multilink.multilink(
+      [
+        model.statusProperty,
+        strings.status.belowStringProperty,
+        strings.status.allowedStringProperty,
+        strings.status.forbiddenStringProperty,
+      ],
+      (status) => {
+        statusText.string = statusStrings[status].value;
+        statusText.fill =
+          status === "allowed"
+            ? PhotonInteractionsColors.restEnergyColorProperty
+            : PhotonInteractionsColors.limitColorProperty;
+        statusText.right = EVENT_WIDTH - 10;
+        statusText.top = 8;
+      },
+    );
 
     const nucleus = new Circle(9, { fill: PhotonInteractionsColors.nucleusColorProperty, center: VERTEX });
     const nucleusLabel = new Text("", {
@@ -102,8 +110,8 @@ export class PairEventNode extends Node {
       nucleus.visible = surroundings !== "vacuum";
       nucleusLabel.visible = nucleus.visible;
       nucleusLabel.string = surroundings === "lead" ? "Pb" : "C";
-      nucleusLabel.centerX = VERTEX.x - 4;
-      nucleusLabel.top = VERTEX.y + 13;
+      nucleusLabel.right = VERTEX.x - 13;
+      nucleusLabel.top = VERTEX.y + 5;
     });
 
     const fieldLabel = new Text(strings.fieldLabelStringProperty, {
@@ -144,12 +152,14 @@ export class PairEventNode extends Node {
       const progress = arriving ? 0 : (phase - ARRIVAL) / (1 - ARRIVAL);
       // The photon: on its way in, then (if nothing happens to it) on its way out.
       const tail = new Vector2(PHOTON_START_X, VERTEX.y);
+      photonLabel.visible = true;
       if (arriving) {
         const reach = PHOTON_START_X + (VERTEX.x - 14 - PHOTON_START_X) * (phase / ARRIVAL);
         photon.setArrow(tail, new Vector2(reach, VERTEX.y), PHOTON_WIGGLE_PX);
         photon.visible = true;
       } else if (event) {
         photon.visible = false;
+        photonLabel.visible = false;
       } else {
         const reach = VERTEX.x - 14 + (EVENT_WIDTH - 20 - VERTEX.x) * Math.min(1, 1.4 * progress);
         photon.setArrow(tail, new Vector2(reach, VERTEX.y), PHOTON_WIGGLE_PX);
@@ -168,7 +178,13 @@ export class PairEventNode extends Node {
           const radius = Math.max(1.5, PIXELS_PER_MM * trackRadiusMm(particle.momentumMagnitude, PAIR.FIELD_T));
           const fullLength = fieldOn ? Math.min(MAX_TRACK_LENGTH, 0.85 * 4 * Math.PI * radius) : STRAIGHT_TRACK_LENGTH;
           path.shape = trackShape(angle, radius, fieldOn ? sense : 0, fullLength * Math.min(1, 1.6 * progress));
-          label.center = VERTEX.plus(Vector2.createPolar(34, angle + sense * 0.55));
+          if (fieldOn) {
+            // To the right of the coil, level with its centre.
+            const centre = VERTEX.plus(Vector2.createPolar(radius, angle + (sense * Math.PI) / 2));
+            label.center = centre.plusXY(Math.min(radius, 150) + 16, 0);
+          } else {
+            label.center = VERTEX.plus(Vector2.createPolar(70, angle + sense * 0.3));
+          }
         };
         // B out of the screen: the positron (below the axis) curls further down, the electron up.
         draw(electronTrack, electronLabel, event.electron, -1);

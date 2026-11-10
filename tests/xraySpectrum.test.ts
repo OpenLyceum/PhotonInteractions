@@ -14,11 +14,20 @@ import {
   spectrumPerEnergy,
   spectrumPerWavelength,
 } from "../src/xray-tube/model/xraySpectrum.js";
-import { XRAY_TARGETS, xrayTargetById } from "../src/xray-tube/model/xrayTargets.js";
+import { XRAY_TARGETS, type XRayLine, type XRayTarget, xrayTargetById } from "../src/xray-tube/model/xrayTargets.js";
 
 const tungsten = xrayTargetById("tungsten");
 const copper = xrayTargetById("copper");
 const molybdenum = xrayTargetById("molybdenum");
+
+/** A target's line by its label; throws rather than returning undefined, so tests need no guards. */
+const lineOf = (target: XRayTarget, label: string): XRayLine => {
+  const line = target.lines.find((candidate) => candidate.label === label);
+  if (!line) {
+    throw new Error(`${target.symbol} has no ${label} line`);
+  }
+  return line;
+};
 
 describe("Duane–Hunt limit", () => {
   it("worked example: 80.0 kV gives 15.5 pm", () => {
@@ -68,7 +77,7 @@ describe("Kramers continuum", () => {
 
 describe("characteristic lines", () => {
   it("appear only above the shell's binding energy", () => {
-    const kAlpha = tungsten.lines[0];
+    const kAlpha = lineOf(tungsten, "Kα₁");
     expect(isLineExcited(kAlpha, 69)).toBe(false);
     expect(lineStrength(kAlpha, 69, 74)).toBe(0);
     expect(isLineExcited(kAlpha, 70)).toBe(true);
@@ -83,7 +92,7 @@ describe("characteristic lines", () => {
   });
 
   it("stay at the same wavelength as the voltage rises, and grow", () => {
-    const wavelength = wavelengthOfEnergy(copper.lines[0].energyKeV);
+    const wavelength = wavelengthOfEnergy(lineOf(copper, "Kα").energyKeV);
     expect(wavelength).toBeCloseTo(154.2, 1);
     const above = (voltage: number): number =>
       spectrumPerWavelength(wavelength, voltage, copper) - kramersContinuum(wavelength, voltage, 29);

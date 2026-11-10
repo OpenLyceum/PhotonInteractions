@@ -1,40 +1,43 @@
 /**
  * AnnihilationScreenSummaryContent.ts
  *
- * The accessible screen summary read by screen readers (SceneryStack's
- * Interactive Description). It appears at the top of the parallel DOM and gives
- * a non-visual user a way to orient themselves and to re-read the simulation's
- * current state at any time.
- *
- * A summary has four regions (all optional, but provide at least the first
- * three in every sim for consistency across OpenLyceum):
- *   - playAreaContent       — what the play area contains
- *   - controlAreaContent    — what the controls do
- *   - currentDetailsContent — a LIVE paragraph describing current state
- *   - interactionHintContent — a short hint on how to get started
- *
- * ── Making "current details" live ─────────────────────────────────────────────
- * The template has no model state, so currentDetails is a static string. In a
- * real sim, build a DerivedProperty over the relevant model Properties and pass
- * it as `currentDetailsContent` so the paragraph updates as the sim runs.
- * See LunarLander/src/.../LunarLanderScreenSummaryContent.ts for the pattern.
- * If that DerivedProperty (or any Multilink) is owned by a short-lived object,
- * dispose it on teardown — see the commented dispose() stub in AnnihilationScreenView.
+ * Screen summary for the Annihilation screen. "Current details" gives the
+ * positron's kinetic energy and each photon's energy and direction.
  */
+
+import { DerivedProperty } from "scenerystack/axon";
+import { StringUtils } from "scenerystack/phetcommon";
 import { ScreenSummaryContent } from "scenerystack/sim";
+import { formatDegrees, formatEnergy } from "../../common/view/chartUtils.js";
 import { StringManager } from "../../i18n/StringManager.js";
 import type { AnnihilationModel } from "../model/AnnihilationModel.js";
 
 export class AnnihilationScreenSummaryContent extends ScreenSummaryContent {
-  // `model` is unused in the template but kept in the signature so real sims can
-  // derive a live currentDetailsContent from it without changing call sites.
-  public constructor(_model: AnnihilationModel) {
+  public constructor(model: AnnihilationModel) {
     const a11y = StringManager.getInstance().getAnnihilationA11yStrings();
+
+    const currentDetailsProperty = new DerivedProperty(
+      [
+        model.kineticProperty,
+        model.photonsProperty,
+        model.openingAngleProperty,
+        a11y.currentDetailsPatternStringProperty,
+      ],
+      (kinetic, [first, second], opening, pattern) =>
+        StringUtils.fillIn(pattern, {
+          kinetic: formatEnergy(kinetic, 3),
+          energy1: formatEnergy(first.energy, 3),
+          angle1: formatDegrees(first.angle, 0),
+          energy2: formatEnergy(second.energy, 3),
+          angle2: formatDegrees(second.angle, 0),
+          opening: formatDegrees(opening, 0),
+        }),
+    );
 
     super({
       playAreaContent: a11y.screenSummary.playAreaStringProperty,
       controlAreaContent: a11y.screenSummary.controlAreaStringProperty,
-      currentDetailsContent: a11y.screenSummary.playAreaStringProperty,
+      currentDetailsContent: currentDetailsProperty,
       interactionHintContent: a11y.screenSummary.interactionHintStringProperty,
     });
   }

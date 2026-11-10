@@ -152,18 +152,19 @@ describe("Klein–Nishina", () => {
     const events = 40000;
     for (let i = 0; i < events; i++) {
       const kinetic = recoilKineticEnergy(energy, sampleScatteringAngle(energy, random));
-      counts[Math.min(bins - 1, Math.floor((kinetic / edge) * bins))] += 1;
+      const bin = Math.min(bins - 1, Math.floor((kinetic / edge) * bins));
+      counts[bin] = (counts[bin] ?? 0) + 1;
     }
     const expected = new Array<number>(bins).fill(0);
     const sub = 200;
     for (let b = 0; b < bins; b++) {
       for (let j = 0; j < sub; j++) {
-        expected[b] += kleinNishinaRecoilSpectrum(energy, ((b + (j + 0.5) / sub) * edge) / bins);
+        expected[b] = (expected[b] ?? 0) + kleinNishinaRecoilSpectrum(energy, ((b + (j + 0.5) / sub) * edge) / bins);
       }
     }
     const total = expected.reduce((sum, v) => sum + v, 0);
     for (let b = 0; b < bins; b++) {
-      expect(counts[b] / events).toBeCloseTo(expected[b] / total, 2);
+      expect((counts[b] ?? 0) / events).toBeCloseTo((expected[b] ?? 0) / total, 2);
     }
   });
 });

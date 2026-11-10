@@ -26,7 +26,7 @@ export const BUDGET_WIDTH = 420;
 export const BUDGET_HEIGHT = 246;
 
 const BAR_LEFT = 104;
-const BAR_WIDTH = 300;
+const BAR_WIDTH = 258;
 const BAR_HEIGHT = 16;
 /** The bars are scaled so this much energy (keV) fills the width, until the photon needs more room. */
 const MINIMUM_FULL_SCALE_KEV = 4000;

@@ -14,7 +14,7 @@
 
 import { COMPTON, PHYSICS } from "../../PhotonInteractionsConstants.js";
 
-const ELECTRON = PHYSICS.ELECTRON_REST_ENERGY_KEV;
+const ELECTRON: number = PHYSICS.ELECTRON_REST_ENERGY_KEV;
 
 /** Wavelength shift λ′ − λ in pm. Independent of the incident wavelength. */
 export const comptonShift = (theta: number, targetRestEnergy = ELECTRON): number =>

@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
-  "description": "A SceneryStack simulation: Photon Interactions.",
+  "description": "Photons as particles in four screens: Compton scattering with the momentum triangle, Compton's spectrometer and a detector's Compton edge; an X-ray tube's bremsstrahlung spectrum, Duane–Hunt limit and characteristic lines; pair production near a nucleus with energy and momentum budgets; and electron–positron annihilation with a PET scanner ring.",
   "license": "AGPL-3.0-or-later",
   "repository": {
     "type": "git",
@@ -14,6 +14,13 @@
     "SceneryStack",
     "interactive",
     "physics",
+    "modern physics",
+    "photon",
+    "Compton scattering",
+    "x-rays",
+    "bremsstrahlung",
+    "pair production",
+    "annihilation",
     "education",
     "pwa"
   ],

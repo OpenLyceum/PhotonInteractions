@@ -1,135 +1,80 @@
-# Implementation Notes - Photon Interactions
+# Implementation notes — Photon Interactions
 
-Developer-facing notes on the **SceneryStackTemplate** scaffold. **Replace and expand this file when
-forking** to describe your sim's real architecture (see Stern Gerlach or Light Propagation for
-target quality). Until then, this documents what the template provides out of the box.
+How the code is put together and why. Physics and data: [`model.md`](model.md).
 
-## Architecture Overview
-
-SceneryStackTemplate is the fleet-canonical starting point for new SceneryStack sims (one or N screens).
-It demonstrates Model–View separation, color profiles, localization, reset behavior, accessibility
-reference wiring, and reusable common components — **without** domain physics.
+## Layout
 
 ```
-main.ts
-  └─ ComptonScreen             (Screen<ComptonModel, ComptonScreenView>)
-       ├─ ComptonModel          state + logic  (src/compton/model/)  ← stub: add physics here
-       └─ ComptonScreenView     visuals        (src/compton/view/)
-            ├─ ComptonScreenSummaryContent     (PDOM overview — reference a11y pattern)
-            └─ ComptonKeyboardHelpContent      (keyboard help dialog)
-
-src/common/
-  ├─ PhotonInteractionsPanel.ts           pre-themed panel (uses PhotonInteractionsColors)
-  ├─ PhotonInteractionsButtonOptions.ts   flat button / combo-box option bundles
-  └─ TimeModel.ts          composable play/pause + elapsed time
-
-src/preferences/
-  ├─ PhotonInteractionsPreferencesModel   sim-specific pref state
-  ├─ PhotonInteractionsPreferencesNode    pref UI in Preferences → Simulation
-  └─ photonInteractionsQueryParameters    QueryStringMachine declarations
+src/
+  common/
+    model/fourMomentum.ts      FourMomentum (E, px, py), boost along x, E ↔ λ ↔ f
+    view/PhotonArrowNode.ts    wavy photon arrow with a settable wiggle wavelength
+    view/EquationNode.ts       a screen's equation, hidden by the Show equations preference
+    view/ChartFrameNode.ts     bamboo chart frame shared by every chart
+    view/chartUtils.ts         nice tick steps; energy, wavelength and angle formatting
+    view/controlHelpers.ts     themed NumberControl, radio group, checkbox, push button, readout row
+    PhotonInteractionsScreenIcons.ts
+  compton/          model/compton.ts (pure), ComptonModel; Collision, MomentumTriangle, Charts, ScreenView
+  xray-tube/        model/xraySpectrum.ts + xrayTargets.ts (pure), XRayTubeModel; Tube, ShellDiagram,
+                    SpectrumChart, MoseleyChart, ScreenView
+  pair-production/  model/pairProduction.ts (pure), PairProductionModel; Event, Budget, ScreenView
+  annihilation/     model/annihilation.ts + petRing.ts (pure), AnnihilationModel; Event, PetRing, ScreenView
+  preferences/      showEquations preference (?showEquations=false)
 ```
 
-Data flows Model → View through AXON `Property` objects (`.link()` / `.lazyLink()`). The view never
-integrates physics; the model never imports scenery.
+## Principles
 
-## Forking checklist
+- **Pure physics, thin models.** Every formula lives in a pure module that the tests exercise
+  directly. Screen models hold only the user's inputs as Properties and derive everything else
+  with DerivedProperty.
+- **One unit system.** keV and pm throughout the physics. The two screens whose controls are in
+  MeV convert once, in the model (`energyProperty = 1000 × energyMeVProperty`).
+- **Accumulated data is a plain array plus an Emitter.** The detector histogram and the PET lines
+  are mutated in place and announced with `histogramChangedEmitter` / `linesChangedEmitter`,
+  rather than replaced through a Property 240 times a second. Changing what they depend on (the
+  photon energy, the tracer position) clears them.
+- **Randomness is injected.** `sampleScatteringAngle(energy, random)` takes its random source, so
+  the test seeds it; the models pass `dotRandom`.
+- **Views live as long as their screen.** Nothing is created at runtime, so screen nodes never
+  dispose. The memory-leak suite covers the two reusable nodes (`PhotonArrowNode`,
+  `EquationNode`).
 
-### Automated rename + scaffold (recommended)
+## Things that bit
 
-```sh
-npm run rename -- --id my-sim --name "My Simulation"
-npm run scaffold-screens -- --screens Intro,Lab   # or omit --screens for one screen
-npm run check
-```
+- **`as const` constants become literal types.** `const ELECTRON = PHYSICS.ELECTRON_REST_ENERGY_KEV`
+  has type `510.99895`, and a default parameter `= ELECTRON` then accepts only that number.
+  Annotate the local as `number`.
+- **A spectral line can fall between samples.** Lines are 0.6% wide; 600 uniform samples across
+  the axis can step over one. `XRaySpectrumChartNode` adds a cluster of samples across every
+  excited line and one exactly at the cutoff, then sorts.
+- **Kramers per energy at E = 0.** The per-wavelength to per-energy conversion is 0·∞ at E = 0,
+  so the first sample sits just inside the frame.
+- **Label placement and `boundsProperty`.** A label that repositions itself when its own
+  `boundsProperty` changes re-enters its listener. Listen to `localBoundsProperty`, which changes
+  only when the text does.
+- **Multilink takes a fixed-length tuple.** Spreading `Object.values(record)` into its dependency
+  list does not type-check; list the string Properties explicitly, or use
+  `DerivedProperty.deriveAny` and read `.value`s.
+- **Bamboo tick sets and big range changes.** `ChartFrameNode.setRanges` parks every spacing at a
+  huge value before changing the ranges (inherited from RelativisticDynamics); the detector
+  chart's range follows the photon energy over seven decades.
 
-Or from the workspace: `Baton/scripts/create-sim.sh --repo MySim --name "My Simulation"`.
+## Layout decisions
 
-`scripts/rename-sim.ts` updates sim-level identifiers (package id, Colors, Preferences).
-`scripts/scaffold-screens.ts` emits fleet-named screen folders and wires main/strings/icons.
+- Every screen keeps its controls in a right-hand column of `CONTROL_WIDTH + 24` panels with
+  Reset All beneath; the event or apparatus is top left, a graph or budget below it, and readouts
+  and the equation in the middle column.
+- Wiggles are relative, not absolute: an incident photon is always drawn with the same wiggle and
+  the scattered one scaled by λ′/λ. Nine decades of wavelength cannot be drawn to one scale.
+- The X-ray spectrum's horizontal axis depends on the anode only, never on the voltage, so that
+  raising the voltage visibly moves the cutoff past stationary lines.
+- The pair-production bars use one scale for energy (keV) and momentum (keV/c). The momentum gap
+  is drawn at least 2 px wide so that it never disappears at high energy, where it is real but
+  small; the number beside it is exact.
 
-### Manual steps (after rename/scaffold or if skipping the scripts)
+## Accessibility
 
-1. **`doc/model.md`** — educator physics (equations, ranges, simplifications).
-2. **`doc/implementation-notes.md`** — this file, rewritten for your architecture.
-3. **Screen model(s)** — real Properties, `step(dt)`, `reset()`; compose `TimeModel` if animated.
-4. **Screen view(s)** — play area + controls; wire `ResetAllButton` to `model.reset()`.
-5. **`*Colors.ts`** — sim palette (default + projector profiles).
-6. **Locale JSON** — title, strings, `a11y` keys; register locales in `init.ts`.
-7. **`public/icons/icon.svg`** → `npm run icons`; align theme color in `index.html` / vite config.
-8. **`tests/setup.ts`** — `init({ name: … })` must match `package.json` name after rename.
-9. **`AGENTS.md`** — sim-specific file map and pitfalls for AI assistants.
-
-## Common components (keep when forking)
-
-### PhotonInteractionsPanel
-
-Every control panel should use `PhotonInteractionsPanel` so projector-mode switching is automatic:
-
-```typescript
-import { PhotonInteractionsPanel } from "../../common/PhotonInteractionsPanel.js";
-const panel = new PhotonInteractionsPanel(content);
-const panelWide = new PhotonInteractionsPanel(content, { xMargin: 20 });
-```
-
-### TimeModel
-
-Compose into your screen model for animation (do not subclass `TimeModel`):
-
-```typescript
-export class MyModel implements TModel {
-  public readonly timer = new TimeModel();  // pass true to auto-play on startup
-
-  public step(dt: number): void {
-    this.timer.step(dt);
-    // physics uses this.timer.timeProperty.value
-  }
-  public reset(): void { this.timer.reset(); /* restore initial state */ }
-}
-```
-
-Wire `TimeControlNode` to `model.timer.isPlayingProperty` in the view.
-
-### PhotonInteractionsButtonOptions
-
-Spread flat button options into every push/round button and `TimeControlNode` (see `AGENTS.md`).
-Use `PHOTON_INTERACTIONS_COMBO_BOX_OPTIONS` + `LIGHT_SURFACE_TEXT_FILL` for light control surfaces on dark panels.
-
-## Accessibility (reference implementation)
-
-The template is the **canonical OpenLyceum a11y reference**:
-
-- PDOM `accessibleName` on interactive nodes (prefer live `StringProperty`s).
-- `ComptonScreenSummaryContent` with a live `currentDetailsContent` `DerivedProperty` over model state.
-- Explicit `pdomOrder` + `ComptonKeyboardHelpContent`.
-- Strings under `a11y` in locale JSON → `StringManager.getComptonA11yStrings()`.
-
-Full checklist: [Baton/ACCESSIBILITY.md](https://github.com/OpenLyceum/Baton/blob/main/ACCESSIBILITY.md).
-
-## Testing (fleet layout — keep when forking)
-
-| Path | Purpose |
-|---|---|
-| `vitest.config.ts` | `happy-dom`; `setupFiles: ["./tests/setup.ts"]`; `execArgv: ["--expose-gc"]` |
-| `tests/setup.ts` | Canvas/AudioContext mocks + `init()` before SceneryStack imports |
-| `tests/TimeModel.test.ts` | **Replace** with real model/physics tests mirroring `src/` |
-| `tests/memory-leak.test.ts` | WeakRef + `forceGC` dispose regression |
-| `tests/fuzz/fuzz.spec.ts` | Optional Playwright smoke via `?fuzz` |
-
-Run `npm test`. Expand `memory-leak.test.ts` when adding runtime-created nodes or Property links.
-
-## Multi-screen simulations
-
-Default is single-screen. To add screens, see **`doc/multi-screen.md`**: per-screen folders mirroring
-`src/compton/`, `StringManager` screen-name getters, optional shared root model, a shared
-`src/common/PhotonInteractionsScreenIcons.ts` module (`create{Screen}Icon()` factories wired as
-`homeScreenIcon` / `navigationBarIcon`), and register all screens in `main.ts`.
-
-## PWA
-
-After `npm run build`, the sim is installable offline via Workbox (`dist/manifest.webmanifest`).
-
-## Known template stubs (remove when forking)
-
-- `ComptonModel.step()` / `reset()` — empty placeholders until you add physics.
-- Placeholder play-area content in `ComptonScreenView` — replace with real UI.
-- `tests/TimeModel.test.ts` — sample only; add tests for your model under `tests/`.
+Standard fleet pattern: every screen has a live `*ScreenSummaryContent`, an explicit `pdomOrder`
+ending in Reset All, and a `*KeyboardHelpContent` (sliders, basic actions). The log-scale energy
+slider reports the physical value through `pdomCreateAriaValueText`. The PET tracer is a
+`RichDragListener` handle that announces its position when a drag ends.

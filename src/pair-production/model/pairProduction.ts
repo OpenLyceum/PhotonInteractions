@@ -13,7 +13,7 @@
 import { FourMomentum } from "../../common/model/fourMomentum.js";
 import { PHYSICS } from "../../PhotonInteractionsConstants.js";
 
-const ELECTRON = PHYSICS.ELECTRON_REST_ENERGY_KEV;
+const ELECTRON: number = PHYSICS.ELECTRON_REST_ENERGY_KEV;
 
 /** 2mₑc²: the rest energy that has to be created, keV. */
 export const PAIR_REST_ENERGY_KEV = 2 * ELECTRON;

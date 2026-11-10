@@ -12,8 +12,7 @@
     "milliampsPattern": "{{value}} mA",
     "megaelectronvoltsPattern": "{{value}} MeV",
     "percentPattern": "{{value}}%",
-    "speedPattern": "{{value}} c",
-    "presets": "Presets"
+    "speedPattern": "{{value}} c"
   },
   "compton": {
     "sourceHeading": "Incident photon",
@@ -38,9 +37,6 @@
     "collisionTitle": "Collision",
     "triangleTitle": "Momentum triangle",
     "incidentPhoton": "incident photon",
-    "scatteredPhoton": "scattered photon",
-    "recoilElectron": "recoil electron",
-    "detector": "detector",
     "readoutsHeading": "Measurements",
     "incidentWavelength": "Incident λ",
     "scatteredWavelength": "Scattered λ′",
@@ -134,7 +130,6 @@
     "restEnergy": "rest energy 2mₑc²",
     "electronKinetic": "electron K",
     "positronKinetic": "positron K",
-    "missing": "missing",
     "momentumTitle": "Momentum budget",
     "photonMomentum": "photon, E/c",
     "pairMomentum": "pair, at most",
@@ -165,8 +160,6 @@
     "cmAngle": "Emission angle",
     "onePhoton": "Try a single photon",
     "eventTitle": "Annihilation",
-    "electronAtRest": "electron at rest",
-    "positronAtRest": "positron at rest",
     "readoutsHeading": "Photons",
     "photon1Energy": "Photon 1 energy",
     "photon2Energy": "Photon 2 energy",
@@ -184,8 +177,7 @@
     "petRun": "Record",
     "petClear": "Clear",
     "petShowTracer": "Show the tracer",
-    "petCountPattern": "Coincidences: {{count}}",
-    "petTracer": "tracer"
+    "petCountPattern": "Coincidences: {{count}}"
   },
   "a11y": {
     "compton": {
@@ -269,7 +261,8 @@
         "petClearHelp": "Removes the recorded lines.",
         "petShowTracer": "Show the tracer",
         "tracer": "Tracer",
-        "tracerHelp": "Move the tracer inside the detector ring with the arrow keys or by dragging."
+        "tracerHelp": "Move the tracer inside the detector ring with the arrow keys or by dragging.",
+        "tracerValuePattern": "Tracer {{x}} centimetres right and {{y}} centimetres up from the centre of the ring."
       }
     }
   },

@@ -1,164 +1,253 @@
 /**
  * AnnihilationScreenView.ts
  *
- * The top-level view for the simulation screen.
+ * Layout for the Annihilation screen:
  *
- * All visual nodes are added here. Follow these conventions:
- *   - Use this.layoutBounds for positioning (never magic pixel values)
- *   - Keep a ResetAllButton that calls model.reset() and this.reset()
- *   - Override step(dt) for frame-by-frame animation
- *
- * ── Adding content ────────────────────────────────────────────────────────────
- * 1. Create Node subclasses in separate files (e.g. PhotonInteractionsControlPanel.ts)
- * 2. Instantiate them here and call this.addChild(...)
- * 3. Link them to model properties:
- *      model.isRunningProperty.link( isRunning => { ... } );
- *
- * ── Layout bounds ─────────────────────────────────────────────────────────────
- * SceneryStack uses a virtual 1024×618 coordinate space by default.
- * this.layoutBounds gives you the full rectangle; use it for alignment:
- *   center, minX, maxX, minY, maxY, width, height
+ *   left     the annihilation in the lab; below it, the PET scanner's ring
+ *   middle   the two photons' energies, wavelengths and directions; the equation
+ *   right    positron energy, emission angle and the single-photon test, the
+ *            scanner's controls; Reset All
  */
 
+import { DerivedProperty, type TReadOnlyProperty } from "scenerystack/axon";
+import { Range } from "scenerystack/dot";
 import { type EmptySelfOptions, optionize } from "scenerystack/phet-core";
-import { Node, Rectangle, Text } from "scenerystack/scenery";
+import { StringUtils } from "scenerystack/phetcommon";
+import { Node, Text, VBox } from "scenerystack/scenery";
 import { ResetAllButton } from "scenerystack/scenery-phet";
 import { ScreenView, type ScreenViewOptions } from "scenerystack/sim";
+import { type FourMomentum, wavelengthOfEnergy } from "../../common/model/fourMomentum.js";
 import { FLAT_RESET_ALL_BUTTON_OPTIONS } from "../../common/PhotonInteractionsButtonOptions.js";
+import { PhotonInteractionsPanel } from "../../common/PhotonInteractionsPanel.js";
+import { formatDegrees, formatEnergy, formatWavelength } from "../../common/view/chartUtils.js";
+import {
+  createCheckbox,
+  createNumberControl,
+  createPushButton,
+  createReadoutRow,
+  createSectionHeader,
+} from "../../common/view/controlHelpers.js";
+import { EquationNode } from "../../common/view/EquationNode.js";
 import { StringManager } from "../../i18n/StringManager.js";
 import PhotonInteractionsColors from "../../PhotonInteractionsColors.js";
-import { SCREEN_VIEW_MARGIN } from "../../PhotonInteractionsConstants.js";
+import { ANNIHILATION, CONTROL_WIDTH, FONTS, SCREEN_VIEW_MARGIN } from "../../PhotonInteractionsConstants.js";
 import type { AnnihilationModel } from "../model/AnnihilationModel.js";
+import { AnnihilationEventNode } from "./AnnihilationEventNode.js";
 import { AnnihilationScreenSummaryContent } from "./AnnihilationScreenSummaryContent.js";
+import { PetRingNode, RING_RADIUS_PX } from "./PetRingNode.js";
 
 export type AnnihilationScreenViewOptions = ScreenViewOptions;
+
+const MIDDLE_WIDTH = 290;
+const READOUT_WIDTH = MIDDLE_WIDTH - 24;
 
 export class AnnihilationScreenView extends ScreenView {
   public constructor(
     model: AnnihilationModel,
-    _showEquationsProperty: unknown,
+    showEquationsProperty: TReadOnlyProperty<boolean>,
     providedOptions?: AnnihilationScreenViewOptions,
   ) {
-    // ── Accessibility: screen summary ───────────────────────────────────────────
-    // The screen summary is the first thing a screen-reader user encounters. It
-    // is registered here, in the ScreenView's super() options, so every sim wires
-    // it the same way. See AnnihilationScreenSummaryContent for the four content regions.
     const options = optionize<AnnihilationScreenViewOptions, EmptySelfOptions, ScreenViewOptions>()(
-      {
-        screenSummaryContent: new AnnihilationScreenSummaryContent(model),
-      },
+      { screenSummaryContent: new AnnihilationScreenSummaryContent(model) },
       providedOptions,
     );
     super(options);
 
-    // ── Background ────────────────────────────────────────────────────────────
-    // A full-screen rectangle that follows the active color profile.
-    // Replace or remove once you add real content.
-    const backgroundRect = new Rectangle(0, 0, this.layoutBounds.width, this.layoutBounds.height, {
-      fill: PhotonInteractionsColors.backgroundColorProperty,
-    });
-    this.addChild(backgroundRect);
+    const bounds = this.layoutBounds;
+    const sm = StringManager.getInstance();
+    const strings = sm.getAnnihilationStrings();
+    const common = sm.getCommonStrings();
+    const a11y = sm.getAnnihilationA11yStrings().controls;
 
-    // ── Placeholder label ─────────────────────────────────────────────────────
-    // Replace this with your actual simulation content.
-    const placeholderText = new Text(StringManager.getInstance().getScreenNames().annihilationStringProperty, {
-      font: "bold 36px sans-serif",
+    // ── Left: event and scanner ─────────────────────────────────────────────────
+    const eventNode = new AnnihilationEventNode(model);
+    eventNode.left = bounds.minX + SCREEN_VIEW_MARGIN;
+    eventNode.top = bounds.minY + SCREEN_VIEW_MARGIN;
+
+    const ring = new PetRingNode(model);
+    // The ring node's origin is the ring's centre.
+    ring.x = eventNode.left + RING_RADIUS_PX + 30;
+    ring.y = eventNode.bottom + 16 + RING_RADIUS_PX + 12;
+    const ringTitle = new Text(strings.petHeadingStringProperty, {
+      font: FONTS.CHART_TITLE,
       fill: PhotonInteractionsColors.textColorProperty,
-      center: this.layoutBounds.center,
+      maxWidth: 150,
     });
-    this.addChild(placeholderText);
+    ringTitle.left = ring.x + RING_RADIUS_PX + 30;
+    ringTitle.top = eventNode.bottom + 20;
+    const countText = new Text(
+      new DerivedProperty([strings.petCountPatternStringProperty, model.coincidenceCountProperty], (pattern, count) =>
+        StringUtils.fillIn(pattern, { count }),
+      ),
+      { font: FONTS.READOUT, fill: PhotonInteractionsColors.textColorProperty, maxWidth: 170 },
+    );
+    countText.left = ringTitle.left;
+    countText.top = ringTitle.bottom + 10;
 
-    // ── Accessibility: per-control names ────────────────────────────────────────
-    // EVERY interactive node must carry an `accessibleName` (and an
-    // `accessibleHelpText` where useful), sourced from the StringManager `a11y`
-    // string group — never a hard-coded English literal. Sun/scenery-phet controls
-    // (NumberControl, Checkbox, ComboBox, AquaRadioButtonGroup, …) accept it as an
-    // option; a draggable plain Node needs `tagName: "div", focusable: true` too.
-    // Example (uncomment and adapt when you add a real control):
-    //
-    //   const a11y = StringManager.getInstance().getAnnihilationA11yStrings();
-    //   const exampleButton = new RectangularPushButton({
-    //     ...FLAT_RECTANGULAR_BUTTON_OPTIONS, // flat appearance, not SceneryStack's default 3-D look
-    //     content: someIcon,
-    //     listener: () => model.doSomething(),
-    //     accessibleName: a11y.controls.exampleControlStringProperty,
-    //   });
-    //   this.addChild(exampleButton);
+    // ── Middle: the two photons ─────────────────────────────────────────────────
+    const fromPhoton = (index: 0 | 1, format: (photon: FourMomentum) => string): TReadOnlyProperty<string> =>
+      new DerivedProperty([model.photonsProperty], (photons) => format(photons[index]));
+    const energy = (photon: FourMomentum): string => formatEnergy(photon.energy, 4);
+    const wavelength = (photon: FourMomentum): string => formatWavelength(wavelengthOfEnergy(photon.energy), 4);
+    const direction = (photon: FourMomentum): string => formatDegrees(photon.angle);
+    const first = PhotonInteractionsColors.photonColorProperty;
+    const second = PhotonInteractionsColors.scatteredPhotonColorProperty;
+    const readouts = new PhotonInteractionsPanel(
+      new VBox({
+        align: "left",
+        spacing: 5,
+        children: [
+          createSectionHeader(strings.readoutsHeadingStringProperty),
+          createReadoutRow(strings.photon1EnergyStringProperty, fromPhoton(0, energy), first, READOUT_WIDTH),
+          createReadoutRow(strings.photon2EnergyStringProperty, fromPhoton(1, energy), second, READOUT_WIDTH),
+          createReadoutRow(strings.photon1WavelengthStringProperty, fromPhoton(0, wavelength), first, READOUT_WIDTH),
+          createReadoutRow(strings.photon2WavelengthStringProperty, fromPhoton(1, wavelength), second, READOUT_WIDTH),
+          createReadoutRow(strings.photon1AngleStringProperty, fromPhoton(0, direction), first, READOUT_WIDTH),
+          createReadoutRow(strings.photon2AngleStringProperty, fromPhoton(1, direction), second, READOUT_WIDTH),
+          createReadoutRow(
+            strings.openingAngleStringProperty,
+            new DerivedProperty([model.openingAngleProperty], (angle) => formatDegrees(angle)),
+            PhotonInteractionsColors.textColorProperty,
+            READOUT_WIDTH,
+          ),
+          createReadoutRow(
+            strings.totalEnergyStringProperty,
+            new DerivedProperty([model.totalProperty], (total) => formatEnergy(total.energy, 4)),
+            PhotonInteractionsColors.textColorProperty,
+            READOUT_WIDTH,
+          ),
+        ],
+      }),
+      { minWidth: MIDDLE_WIDTH },
+    );
+    readouts.left = eventNode.right + 14;
+    readouts.top = eventNode.top;
 
-    // ── Reset All button ──────────────────────────────────────────────────────
-    // Always position at bottom-right (PhET convention).
+    const equations = new VBox({
+      align: "left",
+      spacing: 8,
+      children: [
+        new EquationNode("e⁺ + e⁻ → γ + γ", showEquationsProperty, MIDDLE_WIDTH),
+        new EquationNode("E₁ + E₂ = K + 2mₑc²", showEquationsProperty, MIDDLE_WIDTH),
+        new EquationNode("mₑc² = 511 keV", showEquationsProperty, MIDDLE_WIDTH),
+      ],
+    });
+    equations.left = readouts.left;
+    equations.top = readouts.bottom + 14;
+
+    // ── Right: controls ─────────────────────────────────────────────────────────
+    const kineticControl = createNumberControl(
+      model.kineticMeVProperty,
+      new Range(ANNIHILATION.KINETIC_MIN_MEV, ANNIHILATION.KINETIC_MAX_MEV),
+      {
+        titleProperty: strings.kineticStringProperty,
+        valuePatternProperty: common.megaelectronvoltsPatternStringProperty,
+        accessibleName: a11y.kineticStringProperty,
+        accessibleHelpText: a11y.kineticHelpStringProperty,
+        decimalPlaces: 2,
+        delta: 0.01,
+      },
+    );
+    const positronPanel = new PhotonInteractionsPanel(
+      new VBox({
+        align: "left",
+        spacing: 8,
+        children: [createSectionHeader(strings.positronHeadingStringProperty), kineticControl],
+      }),
+      { minWidth: CONTROL_WIDTH + 24 },
+    );
+
+    const angleControl = createNumberControl(
+      model.cmAngleDegreesProperty,
+      new Range(ANNIHILATION.CM_ANGLE_MIN_DEG, ANNIHILATION.CM_ANGLE_MAX_DEG),
+      {
+        titleProperty: strings.cmAngleStringProperty,
+        valuePatternProperty: common.degreesPatternStringProperty,
+        accessibleName: a11y.cmAngleStringProperty,
+        accessibleHelpText: a11y.cmAngleHelpStringProperty,
+        decimalPlaces: 0,
+        delta: 1,
+      },
+    );
+    const onePhotonCheckbox = createCheckbox(
+      model.onePhotonProperty,
+      strings.onePhotonStringProperty,
+      a11y.onePhotonStringProperty,
+    );
+    const photonsPanel = new PhotonInteractionsPanel(
+      new VBox({
+        align: "left",
+        spacing: 8,
+        children: [createSectionHeader(strings.photonsHeadingStringProperty), angleControl, onePhotonCheckbox],
+      }),
+      { minWidth: CONTROL_WIDTH + 24 },
+    );
+
+    const recordCheckbox = createCheckbox(
+      model.recordingProperty,
+      strings.petRunStringProperty,
+      a11y.petRunStringProperty,
+    );
+    recordCheckbox.accessibleHelpText = a11y.petRunHelpStringProperty;
+    const tracerCheckbox = createCheckbox(
+      model.showTracerProperty,
+      strings.petShowTracerStringProperty,
+      a11y.petShowTracerStringProperty,
+    );
+    const clearButton = createPushButton(strings.petClearStringProperty, {
+      accessibleName: a11y.petClearStringProperty,
+      accessibleHelpText: a11y.petClearHelpStringProperty,
+      listener: () => model.clearLines(),
+      maxTextWidth: 90,
+    });
+    const scannerPanel = new PhotonInteractionsPanel(
+      new VBox({
+        align: "left",
+        spacing: 8,
+        children: [createSectionHeader(strings.petHeadingStringProperty), recordCheckbox, tracerCheckbox, clearButton],
+      }),
+      { minWidth: CONTROL_WIDTH + 24 },
+    );
+
+    const rightColumn = new VBox({
+      spacing: 10,
+      align: "right",
+      children: [positronPanel, photonsPanel, scannerPanel],
+    });
+    rightColumn.right = bounds.maxX - SCREEN_VIEW_MARGIN;
+    rightColumn.top = bounds.minY + SCREEN_VIEW_MARGIN;
+
     const resetAllButton = new ResetAllButton({
       ...FLAT_RESET_ALL_BUTTON_OPTIONS,
       listener: () => {
+        this.interruptSubtreeInput();
         model.reset();
-        this.reset();
       },
-      right: this.layoutBounds.maxX - SCREEN_VIEW_MARGIN,
-      bottom: this.layoutBounds.maxY - SCREEN_VIEW_MARGIN,
+      right: bounds.maxX - SCREEN_VIEW_MARGIN,
+      bottom: bounds.maxY - SCREEN_VIEW_MARGIN,
     });
-    this.addChild(resetAllButton);
 
-    // ── Accessibility: keyboard / reading traversal order ───────────────────────
-    // Make the parallel DOM (Tab order and screen-reader reading order)
-    // deterministic and independent of child z-order. ScreenView throws if you
-    // set pdomOrder on itself, so add a lightweight wrapper Node that "borrows"
-    // the interactive nodes in the order a user should reach them — Reset All
-    // last. Non-interactive decoration (background, placeholder) is omitted.
-    this.addChild(
+    this.children = [
+      eventNode,
+      ring,
+      ringTitle,
+      countText,
+      readouts,
+      equations,
+      rightColumn,
+      resetAllButton,
       new Node({
         pdomOrder: [
-          // TODO: add the sim's interactive nodes here, in traversal order
+          kineticControl,
+          angleControl,
+          onePhotonCheckbox,
+          ring.tracer,
+          recordCheckbox,
+          tracerCheckbox,
+          clearButton,
           resetAllButton,
         ],
       }),
-    );
+    ];
   }
-
-  /**
-   * Resets view-side state (animations, panel visibility, etc.).
-   * Called by the Reset All button listener.
-   */
-  public reset(): void {
-    // TODO: reset any view-side state here
-  }
-
-  /**
-   * Steps the view forward by dt seconds for animation.
-   * @param _dt - elapsed time in seconds
-   */
-  public override step(_dt: number): void {
-    // TODO: implement animation updates here
-  }
-
-  // ── Accessibility / listeners: dispose ─────────────────────────────────────
-  // ScreenView is `isDisposable: false` and lives for the whole sim, so this
-  // class rarely needs dispose(). Child Nodes (and a live currentDetails
-  // DerivedProperty you own on a short-lived object) do. When you add
-  // DerivedProperty / Multilink / Property.link against model state, keep the
-  // references and tear them down — forks copy what they see. Pattern:
-  //
-  // private readonly disposeAnnihilationScreenView: () => void;
-  //
-  // // in the constructor, after creating the listeners:
-  // const statusMultilink = Multilink.multilink(
-  //   [model.someProperty, model.otherProperty],
-  //   (a, b) => { /* update view from model */ },
-  // );
-  // const detailsProperty = new DerivedProperty(
-  //   [model.stateProperty],
-  //   (state) => `State: ${state}`,
-  // ); // → pass as currentDetailsContent in AnnihilationScreenSummaryContent
-  // const onExternal = (v: number) => { /* … */ };
-  // model.externalProperty.link(onExternal); // Property you do NOT own
-  //
-  // this.disposeAnnihilationScreenView = () => {
-  //   statusMultilink.dispose();                 // Multilink you created
-  //   detailsProperty.dispose();                 // DerivedProperty you created
-  //   model.externalProperty.unlink(onExternal); // undo external link
-  // };
-  //
-  // public override dispose(): void {
-  //   this.disposeAnnihilationScreenView();
-  //   super.dispose();
-  // }
 }

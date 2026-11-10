@@ -13,7 +13,7 @@
 import { FourMomentum, momentumOfEnergy } from "../../common/model/fourMomentum.js";
 import { PHYSICS } from "../../PhotonInteractionsConstants.js";
 
-const ELECTRON = PHYSICS.ELECTRON_REST_ENERGY_KEV;
+const ELECTRON: number = PHYSICS.ELECTRON_REST_ENERGY_KEV;
 
 /** Total four-momentum of a positron of kinetic energy K (keV) moving along +x, and an electron at rest. */
 export const initialFourMomentum = (positronKinetic: number): FourMomentum => {
