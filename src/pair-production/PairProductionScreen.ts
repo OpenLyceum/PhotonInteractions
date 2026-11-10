@@ -1,15 +1,15 @@
 /**
  * PairProductionScreen.ts
  *
- * The top-level Screen component. It wires together the model and view
- * factories and passes screen-level options (name, background color, tandem)
- * to the parent Screen class.
+ * Wires the screen's model and view factories and passes screen-level options
+ * (name, background colour, tandem, keyboard help) to the parent Screen class.
  *
  * Registered in the screens array in src/main.ts. Its home-screen and navigation-bar
  * icons come from createPairProductionIcon() in src/common/PhotonInteractionsScreenIcons.ts
  * (see doc/multi-screen.md).
  */
-import { type EmptySelfOptions, optionize } from "scenerystack/phet-core";
+import type { TReadOnlyProperty } from "scenerystack/axon";
+import { optionize } from "scenerystack/phet-core";
 import type { ScreenOptions } from "scenerystack/sim";
 import { Screen } from "scenerystack/sim";
 import type { Tandem } from "scenerystack/tandem";
@@ -20,7 +20,11 @@ import { PairProductionKeyboardHelpContent } from "./view/PairProductionKeyboard
 import { PairProductionScreenView } from "./view/PairProductionScreenView.js";
 
 // Require tandem to be explicit — accidental omission would break PhET-iO.
-type PairProductionScreenOptions = ScreenOptions & { tandem: Tandem };
+type SelfOptions = {
+  /** Whether the screen shows its governing equation (a simulation preference). */
+  showEquationsProperty: TReadOnlyProperty<boolean>;
+};
+type PairProductionScreenOptions = SelfOptions & ScreenOptions & { tandem: Tandem };
 
 export class PairProductionScreen extends Screen<PairProductionModel, PairProductionScreenView> {
   public constructor(options: PairProductionScreenOptions) {
@@ -29,10 +33,10 @@ export class PairProductionScreen extends Screen<PairProductionModel, PairProduc
       () => new PairProductionModel(),
       // View factory — receives the model instance
       (model) =>
-        new PairProductionScreenView(model, {
+        new PairProductionScreenView(model, options.showEquationsProperty, {
           tandem: options.tandem.createTandem("view"),
         }),
-      optionize<PairProductionScreenOptions, EmptySelfOptions, ScreenOptions>()(
+      optionize<PairProductionScreenOptions, SelfOptions, ScreenOptions>()(
         {
           backgroundColorProperty: PhotonInteractionsColors.backgroundColorProperty,
           createKeyboardHelpNode: () => new PairProductionKeyboardHelpContent(),

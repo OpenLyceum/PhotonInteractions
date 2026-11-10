@@ -34,7 +34,11 @@ import { AnnihilationScreenSummaryContent } from "./AnnihilationScreenSummaryCon
 export type AnnihilationScreenViewOptions = ScreenViewOptions;
 
 export class AnnihilationScreenView extends ScreenView {
-  public constructor(model: AnnihilationModel, providedOptions?: AnnihilationScreenViewOptions) {
+  public constructor(
+    model: AnnihilationModel,
+    _showEquationsProperty: unknown,
+    providedOptions?: AnnihilationScreenViewOptions,
+  ) {
     // ── Accessibility: screen summary ───────────────────────────────────────────
     // The screen summary is the first thing a screen-reader user encounters. It
     // is registered here, in the ScreenView's super() options, so every sim wires

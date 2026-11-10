@@ -1,27 +1,20 @@
 /**
  * PhotonInteractionsColors.ts
  *
- * Defines all dynamic colors for the simulation using ProfileColorProperty.
+ * Every colour in the simulation, as ProfileColorProperty with a "default"
+ * (dark) and a "projector" (light) value. SceneryStack switches profiles
+ * automatically.
  *
- * Each color has two profiles:
- *   - "default"   — used in standard (dark) mode
- *   - "projector" — used when the user enables Projector Mode in Preferences
+ * ── The sim's colour language ─────────────────────────────────────────────────
+ * One idea, one hue, on every screen it appears:
  *
- * SceneryStack switches profiles automatically; no manual toggling is needed.
- *
- * ── Usage ─────────────────────────────────────────────────────────────────────
- * Import PhotonInteractionsColors and pass properties directly to Node's fillProperty or
- * strokeProperty options:
- *
- *   import PhotonInteractionsColors from "../../PhotonInteractionsColors.js";
- *
- *   new Rectangle( 0, 0, 100, 50, {
- *     fillProperty: PhotonInteractionsColors.backgroundColorProperty,
- *   });
- *
- * ── How to add a color ────────────────────────────────────────────────────────
- * Add a new ProfileColorProperty entry to the PhotonInteractionsColors object below.
- * Always provide both "default" and "projector" values.
+ *   yellow   the incident photon, and photons in general
+ *   orange   the scattered (lower-energy) photon
+ *   cyan     the electron: its recoil, its track, its kinetic energy
+ *   pink     the positron
+ *   violet   the nucleus and whatever it absorbs
+ *   green    rest energy mc² (and "allowed")
+ *   red      "forbidden", thresholds and limits
  */
 import { ProfileColorProperty } from "scenerystack/scenery";
 import PhotonInteractionsNamespace from "./PhotonInteractionsNamespace.js";
@@ -70,6 +63,91 @@ const PhotonInteractionsColors = {
   textColorProperty: new ProfileColorProperty(PhotonInteractionsNamespace, "text", {
     default: "#e0e0e0",
     projector: "#1a1a1a",
+  }),
+
+  /** Quieter text: readout labels, sub-headers, captions. */
+  secondaryTextColorProperty: new ProfileColorProperty(PhotonInteractionsNamespace, "secondaryText", {
+    default: "#9aa5c4",
+    projector: "#5a5a5a",
+  }),
+
+  // ── Charts and diagrams ───────────────────────────────────────────────────────
+
+  /** Fill inside a chart's plotting rectangle. */
+  chartBackgroundColorProperty: new ProfileColorProperty(PhotonInteractionsNamespace, "chartBackground", {
+    default: "#10182c",
+    projector: "#fafafa",
+  }),
+
+  /** Axes, chart border, tick marks. */
+  chartAxisColorProperty: new ProfileColorProperty(PhotonInteractionsNamespace, "chartAxis", {
+    default: "#c5cbe0",
+    projector: "#37474f",
+  }),
+
+  /** Gridlines: present, never competing with the physics. */
+  chartGridColorProperty: new ProfileColorProperty(PhotonInteractionsNamespace, "chartGrid", {
+    default: "#2c3a5c",
+    projector: "#dcdcdc",
+  }),
+
+  /** Histogram bars and other filled data. */
+  histogramColorProperty: new ProfileColorProperty(PhotonInteractionsNamespace, "histogram", {
+    default: "#3f6fb5",
+    projector: "#90caf9",
+  }),
+
+  // ── Particles ─────────────────────────────────────────────────────────────────
+
+  /** The incident photon, and photons in general. */
+  photonColorProperty: new ProfileColorProperty(PhotonInteractionsNamespace, "photon", {
+    default: "#ffee58",
+    projector: "#c79100",
+  }),
+
+  /** The scattered photon, or the second photon of a pair. */
+  scatteredPhotonColorProperty: new ProfileColorProperty(PhotonInteractionsNamespace, "scatteredPhoton", {
+    default: "#ffa726",
+    projector: "#d84315",
+  }),
+
+  electronColorProperty: new ProfileColorProperty(PhotonInteractionsNamespace, "electron", {
+    default: "#4dd0e1",
+    projector: "#00838f",
+  }),
+
+  positronColorProperty: new ProfileColorProperty(PhotonInteractionsNamespace, "positron", {
+    default: "#f48fb1",
+    projector: "#c2185b",
+  }),
+
+  nucleusColorProperty: new ProfileColorProperty(PhotonInteractionsNamespace, "nucleus", {
+    default: "#b39ddb",
+    projector: "#5e35b1",
+  }),
+
+  /** Rest energy mc², and "this is allowed". */
+  restEnergyColorProperty: new ProfileColorProperty(PhotonInteractionsNamespace, "restEnergy", {
+    default: "#81c784",
+    projector: "#2e7d32",
+  }),
+
+  /** "Forbidden", thresholds, the Duane–Hunt limit, the Compton edge. */
+  limitColorProperty: new ProfileColorProperty(PhotonInteractionsNamespace, "limit", {
+    default: "#ef5350",
+    projector: "#c62828",
+  }),
+
+  /** Apparatus outlines: tube glass, detectors, electrodes. */
+  apparatusColorProperty: new ProfileColorProperty(PhotonInteractionsNamespace, "apparatus", {
+    default: "#78859f",
+    projector: "#607d8b",
+  }),
+
+  /** Apparatus fill: anode metal, detector crystals. */
+  apparatusFillColorProperty: new ProfileColorProperty(PhotonInteractionsNamespace, "apparatusFill", {
+    default: "#2a3757",
+    projector: "#cfd8dc",
   }),
 
   // ── Light control surfaces ───────────────────────────────────────────────────

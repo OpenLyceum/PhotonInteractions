@@ -1,40 +1,47 @@
 /**
  * ComptonScreenSummaryContent.ts
  *
- * The accessible screen summary read by screen readers (SceneryStack's
- * Interactive Description). It appears at the top of the parallel DOM and gives
- * a non-visual user a way to orient themselves and to re-read the simulation's
- * current state at any time.
- *
- * A summary has four regions (all optional, but provide at least the first
- * three in every sim for consistency across OpenLyceum):
- *   - playAreaContent       — what the play area contains
- *   - controlAreaContent    — what the controls do
- *   - currentDetailsContent — a LIVE paragraph describing current state
- *   - interactionHintContent — a short hint on how to get started
- *
- * ── Making "current details" live ─────────────────────────────────────────────
- * The template has no model state, so currentDetails is a static string. In a
- * real sim, build a DerivedProperty over the relevant model Properties and pass
- * it as `currentDetailsContent` so the paragraph updates as the sim runs.
- * See LunarLander/src/.../LunarLanderScreenSummaryContent.ts for the pattern.
- * If that DerivedProperty (or any Multilink) is owned by a short-lived object,
- * dispose it on teardown — see the commented dispose() stub in ComptonScreenView.
+ * Screen summary for the Compton screen. "Current details" states the incident
+ * photon, the scattering angle, the shift, and what the electron carries off.
  */
+
+import { DerivedProperty } from "scenerystack/axon";
+import { StringUtils } from "scenerystack/phetcommon";
 import { ScreenSummaryContent } from "scenerystack/sim";
+import { formatDegrees, formatEnergy, formatWavelength } from "../../common/view/chartUtils.js";
 import { StringManager } from "../../i18n/StringManager.js";
 import type { ComptonModel } from "../model/ComptonModel.js";
 
 export class ComptonScreenSummaryContent extends ScreenSummaryContent {
-  // `model` is unused in the template but kept in the signature so real sims can
-  // derive a live currentDetailsContent from it without changing call sites.
-  public constructor(_model: ComptonModel) {
+  public constructor(model: ComptonModel) {
     const a11y = StringManager.getInstance().getComptonA11yStrings();
+
+    const currentDetailsProperty = DerivedProperty.deriveAny(
+      [
+        model.energyProperty,
+        model.thetaProperty,
+        model.scatteredEnergyProperty,
+        model.recoilKineticProperty,
+        model.recoilAngleProperty,
+        a11y.currentDetailsPatternStringProperty,
+      ],
+      () =>
+        StringUtils.fillIn(a11y.currentDetailsPatternStringProperty.value, {
+          energy: formatEnergy(model.energyProperty.value, 3),
+          wavelength: formatWavelength(model.wavelengthProperty.value, 4),
+          angle: formatDegrees(model.thetaProperty.value, 0),
+          shift: formatWavelength(model.shiftProperty.value, 3),
+          scatteredWavelength: formatWavelength(model.scatteredWavelengthProperty.value, 4),
+          scatteredEnergy: formatEnergy(model.scatteredEnergyProperty.value, 3),
+          recoilAngle: formatDegrees(model.recoilAngleProperty.value, 0),
+          kinetic: formatEnergy(model.recoilKineticProperty.value, 3),
+        }),
+    );
 
     super({
       playAreaContent: a11y.screenSummary.playAreaStringProperty,
       controlAreaContent: a11y.screenSummary.controlAreaStringProperty,
-      currentDetailsContent: a11y.currentDetailsStringProperty,
+      currentDetailsContent: currentDetailsProperty,
       interactionHintContent: a11y.screenSummary.interactionHintStringProperty,
     });
   }

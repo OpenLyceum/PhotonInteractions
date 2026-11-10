@@ -34,7 +34,11 @@ import { PairProductionScreenSummaryContent } from "./PairProductionScreenSummar
 export type PairProductionScreenViewOptions = ScreenViewOptions;
 
 export class PairProductionScreenView extends ScreenView {
-  public constructor(model: PairProductionModel, providedOptions?: PairProductionScreenViewOptions) {
+  public constructor(
+    model: PairProductionModel,
+    _showEquationsProperty: unknown,
+    providedOptions?: PairProductionScreenViewOptions,
+  ) {
     // ── Accessibility: screen summary ───────────────────────────────────────────
     // The screen summary is the first thing a screen-reader user encounters. It
     // is registered here, in the ScreenView's super() options, so every sim wires

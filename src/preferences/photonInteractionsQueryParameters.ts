@@ -11,7 +11,7 @@
  * 2. If it should also be user-editable at runtime, surface it as a preference
  *    in PhotonInteractionsPreferencesModel (initialize that Property from this query parameter).
  *
- * Usage: append e.g. `?exampleToggle=true` to the sim URL.
+ * Usage: append e.g. `?showEquations=true` to the sim URL.
  */
 
 import { logGlobal } from "scenerystack/phet-core";
@@ -20,12 +20,12 @@ import PhotonInteractionsNamespace from "../PhotonInteractionsNamespace.js";
 
 const photonInteractionsQueryParameters = QueryStringMachine.getAll({
   /**
-   * Example public boolean parameter. Replace with real sim-specific parameters,
-   * or remove if the sim has none.
+   * Whether each screen shows its governing equation. `?showEquations=false`
+   * hides them, for a class that is about to derive them.
    */
-  exampleToggle: {
+  showEquations: {
     type: "boolean",
-    defaultValue: false,
+    defaultValue: true,
     public: true,
   },
 });

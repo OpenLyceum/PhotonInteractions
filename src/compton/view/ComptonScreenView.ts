@@ -1,160 +1,349 @@
 /**
  * ComptonScreenView.ts
  *
- * The top-level view for the simulation screen.
+ * Layout for the Compton screen:
  *
- * All visual nodes are added here. Follow these conventions:
- *   - Use this.layoutBounds for positioning (never magic pixel values)
- *   - Keep a ResetAllButton that calls model.reset() and this.reset()
- *   - Override step(dt) for frame-by-frame animation
- *
- * ── Adding content ────────────────────────────────────────────────────────────
- * 1. Create Node subclasses in separate files (e.g. PhotonInteractionsControlPanel.ts)
- * 2. Instantiate them here and call this.addChild(...)
- * 3. Link them to model properties:
- *      model.isRunningProperty.link( isRunning => { ... } );
- *
- * ── Layout bounds ─────────────────────────────────────────────────────────────
- * SceneryStack uses a virtual 1024×618 coordinate space by default.
- * this.layoutBounds gives you the full rectangle; use it for alignment:
- *   center, minX, maxX, minY, maxY, width, height
+ *   left     the collision in the lab; below it, one of three graphs
+ *   middle   the momentum triangle, the table of measurements, the equation,
+ *            and the detector's fire and clear controls
+ *   right    incident photon, scattering angle, choice of graph; Reset All
  */
 
+import { DerivedProperty, type TReadOnlyProperty } from "scenerystack/axon";
+import { Dimension2, Range } from "scenerystack/dot";
 import { type EmptySelfOptions, optionize } from "scenerystack/phet-core";
-import { Node, Rectangle, Text } from "scenerystack/scenery";
+import { StringUtils } from "scenerystack/phetcommon";
+import { HBox, Node, Text, VBox } from "scenerystack/scenery";
 import { ResetAllButton } from "scenerystack/scenery-phet";
 import { ScreenView, type ScreenViewOptions } from "scenerystack/sim";
+import { HSlider } from "scenerystack/sun";
 import { FLAT_RESET_ALL_BUTTON_OPTIONS } from "../../common/PhotonInteractionsButtonOptions.js";
+import { PhotonInteractionsPanel } from "../../common/PhotonInteractionsPanel.js";
+import { formatDegrees, formatEnergy, formatSignificant, formatWavelength } from "../../common/view/chartUtils.js";
+import {
+  createCheckbox,
+  createNumberControl,
+  createPushButton,
+  createRadioButtonGroup,
+  createReadoutRow,
+  createSectionHeader,
+} from "../../common/view/controlHelpers.js";
+import { EquationNode } from "../../common/view/EquationNode.js";
 import { StringManager } from "../../i18n/StringManager.js";
 import PhotonInteractionsColors from "../../PhotonInteractionsColors.js";
-import { SCREEN_VIEW_MARGIN } from "../../PhotonInteractionsConstants.js";
+import { COMPTON, CONTROL_WIDTH, FONTS, SCREEN_VIEW_MARGIN } from "../../PhotonInteractionsConstants.js";
 import type { ComptonModel } from "../model/ComptonModel.js";
+import { ComptonChartsNode } from "./ComptonChartsNode.js";
+import { COLLISION_WIDTH, ComptonCollisionNode } from "./ComptonCollisionNode.js";
 import { ComptonScreenSummaryContent } from "./ComptonScreenSummaryContent.js";
+import { MomentumTriangleNode, TRIANGLE_WIDTH } from "./MomentumTriangleNode.js";
 
 export type ComptonScreenViewOptions = ScreenViewOptions;
 
+const READOUT_WIDTH = TRIANGLE_WIDTH - 24;
+const PRESET_BUTTON_TEXT_WIDTH = 92;
+
 export class ComptonScreenView extends ScreenView {
-  public constructor(model: ComptonModel, providedOptions?: ComptonScreenViewOptions) {
-    // ── Accessibility: screen summary ───────────────────────────────────────────
-    // The screen summary is the first thing a screen-reader user encounters. It
-    // is registered here, in the ScreenView's super() options, so every sim wires
-    // it the same way. See ComptonScreenSummaryContent for the four content regions.
+  public constructor(
+    model: ComptonModel,
+    showEquationsProperty: TReadOnlyProperty<boolean>,
+    providedOptions?: ComptonScreenViewOptions,
+  ) {
     const options = optionize<ComptonScreenViewOptions, EmptySelfOptions, ScreenViewOptions>()(
-      {
-        screenSummaryContent: new ComptonScreenSummaryContent(model),
-      },
+      { screenSummaryContent: new ComptonScreenSummaryContent(model) },
       providedOptions,
     );
     super(options);
 
-    // ── Background ────────────────────────────────────────────────────────────
-    // A full-screen rectangle that follows the active color profile.
-    // Replace or remove once you add real content.
-    const backgroundRect = new Rectangle(0, 0, this.layoutBounds.width, this.layoutBounds.height, {
-      fill: PhotonInteractionsColors.backgroundColorProperty,
+    const bounds = this.layoutBounds;
+    const sm = StringManager.getInstance();
+    const strings = sm.getComptonStrings();
+    const common = sm.getCommonStrings();
+    const a11y = sm.getComptonA11yStrings().controls;
+
+    // ── Left: collision and graph ───────────────────────────────────────────────
+    const collision = new ComptonCollisionNode(model);
+    collision.left = bounds.minX + SCREEN_VIEW_MARGIN;
+    collision.top = bounds.minY + SCREEN_VIEW_MARGIN;
+
+    const charts = new ComptonChartsNode(model);
+    // The charts' own left edge is the y-axis label; the frame sits 45 px inside it.
+    charts.left = collision.left + 4;
+    charts.top = collision.bottom + 12;
+
+    // ── Middle: triangle, measurements, equation, detector controls ─────────────
+    const triangle = new MomentumTriangleNode(model);
+    triangle.left = collision.left + COLLISION_WIDTH + 14;
+    triangle.top = collision.top;
+
+    const energyText = (property: TReadOnlyProperty<number>): TReadOnlyProperty<string> =>
+      new DerivedProperty([property], (value) => formatEnergy(value, 4));
+    const wavelengthText = (property: TReadOnlyProperty<number>): TReadOnlyProperty<string> =>
+      new DerivedProperty([property], (value) => formatWavelength(value, 5));
+    const fractionalShiftProperty = new DerivedProperty(
+      [model.shiftProperty, model.wavelengthProperty],
+      (shift, wavelength) => formatSignificant(shift / wavelength, 3),
+    );
+    const readouts = new PhotonInteractionsPanel(
+      new VBox({
+        align: "left",
+        spacing: 5,
+        children: [
+          createSectionHeader(strings.readoutsHeadingStringProperty),
+          createReadoutRow(
+            strings.incidentWavelengthStringProperty,
+            wavelengthText(model.wavelengthProperty),
+            PhotonInteractionsColors.photonColorProperty,
+            READOUT_WIDTH,
+          ),
+          createReadoutRow(
+            strings.scatteredWavelengthStringProperty,
+            wavelengthText(model.scatteredWavelengthProperty),
+            PhotonInteractionsColors.scatteredPhotonColorProperty,
+            READOUT_WIDTH,
+          ),
+          createReadoutRow(
+            strings.shiftStringProperty,
+            wavelengthText(model.shiftProperty),
+            PhotonInteractionsColors.textColorProperty,
+            READOUT_WIDTH,
+          ),
+          createReadoutRow(
+            strings.fractionalShiftStringProperty,
+            fractionalShiftProperty,
+            PhotonInteractionsColors.textColorProperty,
+            READOUT_WIDTH,
+          ),
+          createReadoutRow(
+            strings.incidentEnergyStringProperty,
+            energyText(model.energyProperty),
+            PhotonInteractionsColors.photonColorProperty,
+            READOUT_WIDTH,
+          ),
+          createReadoutRow(
+            strings.scatteredEnergyStringProperty,
+            energyText(model.scatteredEnergyProperty),
+            PhotonInteractionsColors.scatteredPhotonColorProperty,
+            READOUT_WIDTH,
+          ),
+          createReadoutRow(
+            strings.electronKineticStringProperty,
+            energyText(model.recoilKineticProperty),
+            PhotonInteractionsColors.electronColorProperty,
+            READOUT_WIDTH,
+          ),
+          createReadoutRow(
+            strings.recoilAngleStringProperty,
+            new DerivedProperty([model.recoilAngleProperty], (phi) => formatDegrees(phi)),
+            PhotonInteractionsColors.electronColorProperty,
+            READOUT_WIDTH,
+          ),
+        ],
+      }),
+      { minWidth: TRIANGLE_WIDTH },
+    );
+    readouts.left = triangle.left;
+    readouts.top = triangle.bottom + 10;
+
+    const equation = new EquationNode(
+      "λ′ − λ = (h/mₑc)(1 − cos θ),   h/mₑc = 2.426 pm",
+      showEquationsProperty,
+      TRIANGLE_WIDTH,
+    );
+    equation.left = triangle.left;
+    equation.top = readouts.bottom + 12;
+
+    const fireCheckbox = createCheckbox(
+      model.firingProperty,
+      strings.firePhotonsStringProperty,
+      a11y.firePhotonsStringProperty,
+    );
+    fireCheckbox.accessibleHelpText = a11y.firePhotonsHelpStringProperty;
+    const clearButton = createPushButton(strings.clearStringProperty, {
+      accessibleName: a11y.clearStringProperty,
+      accessibleHelpText: a11y.clearHelpStringProperty,
+      listener: () => model.clearHistogram(),
+      maxTextWidth: 80,
     });
-    this.addChild(backgroundRect);
-
-    // ── Placeholder label ─────────────────────────────────────────────────────
-    // Replace this with your actual simulation content.
-    const placeholderText = new Text(StringManager.getInstance().getScreenNames().comptonStringProperty, {
-      font: "bold 36px sans-serif",
-      fill: PhotonInteractionsColors.textColorProperty,
-      center: this.layoutBounds.center,
+    const eventsText = new Text(
+      new DerivedProperty([strings.eventsPatternStringProperty, model.eventCountProperty], (pattern, count) =>
+        StringUtils.fillIn(pattern, { count }),
+      ),
+      { font: FONTS.READOUT, fill: PhotonInteractionsColors.textColorProperty, maxWidth: TRIANGLE_WIDTH },
+    );
+    const detectorControls = new VBox({
+      align: "left",
+      spacing: 8,
+      children: [new HBox({ spacing: 24, children: [fireCheckbox, clearButton] }), eventsText],
+      visibleProperty: new DerivedProperty([model.graphProperty], (graph) => graph === "detector"),
     });
-    this.addChild(placeholderText);
+    detectorControls.left = triangle.left;
+    detectorControls.top = equation.top + 36;
 
-    // ── Accessibility: per-control names ────────────────────────────────────────
-    // EVERY interactive node must carry an `accessibleName` (and an
-    // `accessibleHelpText` where useful), sourced from the StringManager `a11y`
-    // string group — never a hard-coded English literal. Sun/scenery-phet controls
-    // (NumberControl, Checkbox, ComboBox, AquaRadioButtonGroup, …) accept it as an
-    // option; a draggable plain Node needs `tagName: "div", focusable: true` too.
-    // Example (uncomment and adapt when you add a real control):
-    //
-    //   const a11y = StringManager.getInstance().getComptonA11yStrings();
-    //   const exampleButton = new RectangularPushButton({
-    //     ...FLAT_RECTANGULAR_BUTTON_OPTIONS, // flat appearance, not SceneryStack's default 3-D look
-    //     content: someIcon,
-    //     listener: () => model.doSomething(),
-    //     accessibleName: a11y.controls.exampleControlStringProperty,
-    //   });
-    //   this.addChild(exampleButton);
+    // ── Right: controls ─────────────────────────────────────────────────────────
+    const energyValueProperty = new DerivedProperty(
+      [model.energyProperty, model.wavelengthProperty],
+      (energy, wavelength) => `${formatEnergy(energy, 4)}   λ = ${formatWavelength(wavelength, 4)}`,
+    );
+    const energySlider = new HSlider(
+      model.logEnergyProperty,
+      new Range(COMPTON.LOG_ENERGY_MIN, COMPTON.LOG_ENERGY_MAX),
+      {
+        trackSize: new Dimension2(CONTROL_WIDTH - 20, 4),
+        thumbSize: new Dimension2(14, 26),
+        thumbFill: PhotonInteractionsColors.accentColorProperty,
+        trackFillEnabled: PhotonInteractionsColors.textColorProperty,
+        keyboardStep: 0.05,
+        shiftKeyboardStep: 0.005,
+        pageKeyboardStep: 0.5,
+        accessibleName: a11y.energyStringProperty,
+        accessibleHelpText: a11y.energyHelpStringProperty,
+        pdomCreateAriaValueText: () => energyValueProperty.value,
+        pdomDependencies: [energyValueProperty],
+      },
+    );
+    // One tick per decade, labelled where a unit changes: 1 eV, 1 keV, 1 MeV.
+    for (let decade = COMPTON.LOG_ENERGY_MIN; decade <= COMPTON.LOG_ENERGY_MAX; decade++) {
+      const labels: Record<number, string> = { [-3]: "1 eV", 0: "1 keV", 3: "1 MeV" };
+      const label = labels[decade];
+      if (label) {
+        energySlider.addMajorTick(
+          decade,
+          new Text(label, { font: FONTS.TICK_LABEL, fill: PhotonInteractionsColors.textColorProperty }),
+        );
+      } else {
+        energySlider.addMinorTick(decade);
+      }
+    }
+    const preset = (labelProperty: TReadOnlyProperty<string>, apply: () => void) =>
+      createPushButton(labelProperty, {
+        accessibleName: labelProperty,
+        accessibleHelpText: a11y.presetHelpStringProperty,
+        listener: apply,
+        maxTextWidth: PRESET_BUTTON_TEXT_WIDTH,
+      });
+    const presetButtons = [
+      preset(strings.presets.workedExampleStringProperty, () =>
+        model.setWavelength(COMPTON.WORKED_EXAMPLE_WAVELENGTH_PM),
+      ),
+      preset(strings.presets.molybdenumStringProperty, () => model.setWavelength(COMPTON.MOLYBDENUM_WAVELENGTH_PM)),
+      preset(strings.presets.cesiumStringProperty, () => model.setEnergy(COMPTON.CESIUM_ENERGY_KEV)),
+      preset(strings.presets.visibleStringProperty, () => model.setWavelength(COMPTON.VISIBLE_WAVELENGTH_PM)),
+    ];
+    const sourcePanel = new PhotonInteractionsPanel(
+      new VBox({
+        align: "left",
+        spacing: 8,
+        children: [
+          createSectionHeader(strings.sourceHeadingStringProperty),
+          new Text(energyValueProperty, {
+            font: FONTS.READOUT_VALUE,
+            fill: PhotonInteractionsColors.photonColorProperty,
+            maxWidth: CONTROL_WIDTH,
+          }),
+          energySlider,
+          new HBox({ spacing: 6, children: presetButtons.slice(0, 2) }),
+          new HBox({ spacing: 6, children: presetButtons.slice(2, 4) }),
+        ],
+      }),
+      { minWidth: CONTROL_WIDTH + 24 },
+    );
 
-    // ── Reset All button ──────────────────────────────────────────────────────
-    // Always position at bottom-right (PhET convention).
+    const angleControl = createNumberControl(
+      model.angleDegreesProperty,
+      new Range(COMPTON.ANGLE_MIN_DEG, COMPTON.ANGLE_MAX_DEG),
+      {
+        titleProperty: strings.angleStringProperty,
+        valuePatternProperty: common.degreesPatternStringProperty,
+        accessibleName: a11y.angleStringProperty,
+        accessibleHelpText: a11y.angleHelpStringProperty,
+        decimalPlaces: 0,
+        delta: 1,
+      },
+    );
+    const boundCheckbox = createCheckbox(
+      model.includeBoundProperty,
+      strings.includeBoundStringProperty,
+      a11y.includeBoundStringProperty,
+    );
+    const scatteringPanel = new PhotonInteractionsPanel(
+      new VBox({
+        align: "left",
+        spacing: 8,
+        children: [createSectionHeader(strings.scatteringHeadingStringProperty), angleControl, boundCheckbox],
+      }),
+      { minWidth: CONTROL_WIDTH + 24 },
+    );
+
+    const graphRadio = createRadioButtonGroup(
+      model.graphProperty,
+      [
+        {
+          value: "shift" as const,
+          labelProperty: strings.graphs.shiftStringProperty,
+          accessibleName: strings.graphs.shiftStringProperty,
+        },
+        {
+          value: "spectrometer" as const,
+          labelProperty: strings.graphs.spectrometerStringProperty,
+          accessibleName: strings.graphs.spectrometerStringProperty,
+        },
+        {
+          value: "detector" as const,
+          labelProperty: strings.graphs.detectorStringProperty,
+          accessibleName: strings.graphs.detectorStringProperty,
+        },
+      ],
+      { accessibleName: a11y.graphStringProperty, accessibleHelpText: a11y.graphHelpStringProperty },
+    );
+    const graphPanel = new PhotonInteractionsPanel(
+      new VBox({
+        align: "left",
+        spacing: 8,
+        children: [createSectionHeader(strings.graphHeadingStringProperty), graphRadio],
+      }),
+      { minWidth: CONTROL_WIDTH + 24 },
+    );
+
+    const rightColumn = new VBox({
+      spacing: 10,
+      align: "right",
+      children: [sourcePanel, scatteringPanel, graphPanel],
+    });
+    rightColumn.right = bounds.maxX - SCREEN_VIEW_MARGIN;
+    rightColumn.top = bounds.minY + SCREEN_VIEW_MARGIN;
+
     const resetAllButton = new ResetAllButton({
       ...FLAT_RESET_ALL_BUTTON_OPTIONS,
       listener: () => {
+        this.interruptSubtreeInput();
         model.reset();
-        this.reset();
       },
-      right: this.layoutBounds.maxX - SCREEN_VIEW_MARGIN,
-      bottom: this.layoutBounds.maxY - SCREEN_VIEW_MARGIN,
+      right: bounds.maxX - SCREEN_VIEW_MARGIN,
+      bottom: bounds.maxY - SCREEN_VIEW_MARGIN,
     });
-    this.addChild(resetAllButton);
 
-    // ── Accessibility: keyboard / reading traversal order ───────────────────────
-    // Make the parallel DOM (Tab order and screen-reader reading order)
-    // deterministic and independent of child z-order. ScreenView throws if you
-    // set pdomOrder on itself, so add a lightweight wrapper Node that "borrows"
-    // the interactive nodes in the order a user should reach them — Reset All
-    // last. Non-interactive decoration (background, placeholder) is omitted.
-    this.addChild(
+    this.children = [
+      collision,
+      charts,
+      triangle,
+      readouts,
+      equation,
+      detectorControls,
+      rightColumn,
+      resetAllButton,
       new Node({
         pdomOrder: [
-          // TODO: add the sim's interactive nodes here, in traversal order
+          energySlider,
+          ...presetButtons,
+          angleControl,
+          boundCheckbox,
+          graphRadio,
+          fireCheckbox,
+          clearButton,
           resetAllButton,
         ],
       }),
-    );
+    ];
   }
-
-  /**
-   * Resets view-side state (animations, panel visibility, etc.).
-   * Called by the Reset All button listener.
-   */
-  public reset(): void {
-    // TODO: reset any view-side state here
-  }
-
-  /**
-   * Steps the view forward by dt seconds for animation.
-   * @param _dt - elapsed time in seconds
-   */
-  public override step(_dt: number): void {
-    // TODO: implement animation updates here
-  }
-
-  // ── Accessibility / listeners: dispose ─────────────────────────────────────
-  // ScreenView is `isDisposable: false` and lives for the whole sim, so this
-  // class rarely needs dispose(). Child Nodes (and a live currentDetails
-  // DerivedProperty you own on a short-lived object) do. When you add
-  // DerivedProperty / Multilink / Property.link against model state, keep the
-  // references and tear them down — forks copy what they see. Pattern:
-  //
-  // private readonly disposeComptonScreenView: () => void;
-  //
-  // // in the constructor, after creating the listeners:
-  // const statusMultilink = Multilink.multilink(
-  //   [model.someProperty, model.otherProperty],
-  //   (a, b) => { /* update view from model */ },
-  // );
-  // const detailsProperty = new DerivedProperty(
-  //   [model.stateProperty],
-  //   (state) => `State: ${state}`,
-  // ); // → pass as currentDetailsContent in ComptonScreenSummaryContent
-  // const onExternal = (v: number) => { /* … */ };
-  // model.externalProperty.link(onExternal); // Property you do NOT own
-  //
-  // this.disposeComptonScreenView = () => {
-  //   statusMultilink.dispose();                 // Multilink you created
-  //   detailsProperty.dispose();                 // DerivedProperty you created
-  //   model.externalProperty.unlink(onExternal); // undo external link
-  // };
-  //
-  // public override dispose(): void {
-  //   this.disposeComptonScreenView();
-  //   super.dispose();
-  // }
 }

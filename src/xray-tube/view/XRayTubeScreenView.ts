@@ -34,7 +34,11 @@ import { XRayTubeScreenSummaryContent } from "./XRayTubeScreenSummaryContent.js"
 export type XRayTubeScreenViewOptions = ScreenViewOptions;
 
 export class XRayTubeScreenView extends ScreenView {
-  public constructor(model: XRayTubeModel, providedOptions?: XRayTubeScreenViewOptions) {
+  public constructor(
+    model: XRayTubeModel,
+    _showEquationsProperty: unknown,
+    providedOptions?: XRayTubeScreenViewOptions,
+  ) {
     // ── Accessibility: screen summary ───────────────────────────────────────────
     // The screen summary is the first thing a screen-reader user encounters. It
     // is registered here, in the ScreenView's super() options, so every sim wires

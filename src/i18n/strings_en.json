@@ -2,58 +2,280 @@
   "title": "Photon Interactions",
   "screens": {
     "compton": "Compton",
-    "xrayTube": "XRayTube",
-    "pairProduction": "PairProduction",
+    "xrayTube": "X-Ray Tube",
+    "pairProduction": "Pair Production",
     "annihilation": "Annihilation"
+  },
+  "common": {
+    "degreesPattern": "{{value}}°",
+    "kilovoltsPattern": "{{value}} kV",
+    "milliampsPattern": "{{value}} mA",
+    "megaelectronvoltsPattern": "{{value}} MeV",
+    "percentPattern": "{{value}}%",
+    "speedPattern": "{{value}} c",
+    "presets": "Presets"
+  },
+  "compton": {
+    "sourceHeading": "Incident photon",
+    "presets": {
+      "workedExample": "X-ray 0.100 nm",
+      "molybdenum": "Mo Kα 71.1 pm",
+      "cesium": "Cs-137 662 keV",
+      "visible": "Visible 600 nm"
+    },
+    "scatteringHeading": "Scattering",
+    "angle": "Angle θ",
+    "includeBound": "Bound electrons too",
+    "graphHeading": "Graph",
+    "graphs": {
+      "shift": "Shift against angle",
+      "spectrometer": "Spectrometer",
+      "detector": "Detector spectrum"
+    },
+    "firePhotons": "Fire photons",
+    "clear": "Clear",
+    "eventsPattern": "Photons detected: {{count}}",
+    "collisionTitle": "Collision",
+    "triangleTitle": "Momentum triangle",
+    "incidentPhoton": "incident photon",
+    "scatteredPhoton": "scattered photon",
+    "recoilElectron": "recoil electron",
+    "detector": "detector",
+    "readoutsHeading": "Measurements",
+    "incidentWavelength": "Incident λ",
+    "scatteredWavelength": "Scattered λ′",
+    "shift": "Shift λ′ − λ",
+    "fractionalShift": "Fractional shift",
+    "incidentEnergy": "Incident E",
+    "scatteredEnergy": "Scattered E′",
+    "electronKinetic": "Electron K",
+    "recoilAngle": "Recoil angle φ",
+    "shiftChartTitle": "Wavelength shift against scattering angle",
+    "shiftChartX": "scattering angle θ (degrees)",
+    "shiftChartY": "λ′ − λ (pm)",
+    "energyRatio": "E′/E",
+    "spectrometerTitle": "Spectrometer at angle θ",
+    "spectrometerX": "λ′ − λ (pm)",
+    "spectrometerY": "intensity",
+    "unshifted": "unshifted",
+    "shifted": "shifted",
+    "detectorTitle": "Energy deposited in a detector",
+    "detectorXPattern": "energy deposited ({{unit}})",
+    "detectorY": "counts",
+    "comptonEdge": "Compton edge",
+    "photopeak": "photopeak"
+  },
+  "xrayTube": {
+    "tubeHeading": "Tube",
+    "voltage": "Voltage",
+    "current": "Current",
+    "anodeHeading": "Anode",
+    "targets": {
+      "chromium": "Chromium, Z = 24",
+      "copper": "Copper, Z = 29",
+      "molybdenum": "Molybdenum, Z = 42",
+      "silver": "Silver, Z = 47",
+      "tungsten": "Tungsten, Z = 74"
+    },
+    "graphHeading": "Graph",
+    "axes": {
+      "wavelength": "Against wavelength",
+      "energy": "Against photon energy"
+    },
+    "showMoseley": "Moseley plot",
+    "presets": {
+      "workedExample": "80 kV tungsten",
+      "problem": "120 kV tungsten"
+    },
+    "readoutsHeading": "Limits",
+    "minimumWavelength": "Minimum λ",
+    "maximumEnergy": "Maximum photon E",
+    "electronSpeed": "Electron speed",
+    "kEdge": "K-shell binding",
+    "kLines": "K lines",
+    "excited": "excited",
+    "notExcited": "not excited",
+    "spectrumTitle": "X-ray spectrum",
+    "wavelengthAxis": "wavelength (pm)",
+    "energyAxis": "photon energy (keV)",
+    "intensityAxis": "intensity",
+    "duaneHuntWavelength": "λ<sub>min</sub> = hc/eV",
+    "duaneHuntEnergy": "E<sub>max</sub> = eV",
+    "moseleyTitle": "Moseley plot of the Kα lines",
+    "moseleyX": "atomic number Z",
+    "moseleyY": "√f (10⁹ Hz<sup>½</sup>)",
+    "moseleyLaw": "Moseley's law",
+    "cathode": "cathode",
+    "anode": "anode",
+    "shellTitle": "Inner shells of the anode atom",
+    "belowEdge": "eV is below the K-shell binding energy: no K lines",
+    "aboveEdge": "A K electron is knocked out: K lines are emitted"
+  },
+  "pairProduction": {
+    "photonHeading": "Photon",
+    "energy": "Energy",
+    "presets": {
+      "threshold": "1.022 MeV",
+      "problem": "2.50 MeV",
+      "workedExample": "3.00 MeV"
+    },
+    "surroundingsHeading": "Surroundings",
+    "surroundings": {
+      "nucleus": "Near a nucleus",
+      "vacuum": "Empty space"
+    },
+    "nuclei": {
+      "carbon": "Carbon-12 nucleus",
+      "lead": "Lead-208 nucleus"
+    },
+    "pairHeading": "Pair",
+    "share": "Electron's share",
+    "magneticField": "Magnetic field, 1 T",
+    "eventTitle": "Event",
+    "fieldLabel": "B into the screen",
+    "budgetTitle": "Energy budget",
+    "restEnergy": "rest energy 2mₑc²",
+    "electronKinetic": "electron K",
+    "positronKinetic": "positron K",
+    "missing": "missing",
+    "momentumTitle": "Momentum budget",
+    "photonMomentum": "photon, E/c",
+    "pairMomentum": "pair, at most",
+    "nucleusTakes": "The nucleus takes the difference.",
+    "nothingTakes": "Nothing is there to take the difference.",
+    "status": {
+      "below": "Below threshold: no pair",
+      "allowed": "A pair is produced",
+      "forbidden": "Forbidden: momentum cannot be conserved"
+    },
+    "readoutsHeading": "Products",
+    "electronEnergy": "Electron K",
+    "positronEnergy": "Positron K",
+    "electronSpeed": "Electron speed",
+    "positronSpeed": "Positron speed",
+    "nucleusMomentum": "Nucleus recoil p",
+    "nucleusKinetic": "Nucleus recoil K",
+    "shortfall": "Momentum shortfall"
+  },
+  "annihilation": {
+    "positronHeading": "Positron",
+    "kinetic": "Kinetic energy",
+    "photonsHeading": "Photons",
+    "cmAngle": "Emission angle",
+    "onePhoton": "Try a single photon",
+    "eventTitle": "Annihilation",
+    "electronAtRest": "electron at rest",
+    "positronAtRest": "positron at rest",
+    "readoutsHeading": "Photons",
+    "photon1Energy": "Photon 1 energy",
+    "photon2Energy": "Photon 2 energy",
+    "photon1Wavelength": "Photon 1 λ",
+    "photon2Wavelength": "Photon 2 λ",
+    "photon1Angle": "Photon 1 direction",
+    "photon2Angle": "Photon 2 direction",
+    "openingAngle": "Angle between them",
+    "totalEnergy": "Total energy",
+    "onePhotonTitle": "One photon?",
+    "onePhotonNeeds": "one photon would carry",
+    "onePhotonHas": "the pair brings only",
+    "onePhotonForbiddenPattern": "Forbidden: {{deficit}} of momentum has nowhere to come from.",
+    "petHeading": "PET scanner",
+    "petRun": "Record",
+    "petClear": "Clear",
+    "petShowTracer": "Show the tracer",
+    "petCountPattern": "Coincidences: {{count}}",
+    "petTracer": "tracer"
   },
   "a11y": {
     "compton": {
       "screenSummary": {
-        "playArea": "The play area shows the main simulation content.",
-        "controlArea": "The control area has a Reset All button that returns the simulation to its starting state.",
-        "interactionHint": "Explore the simulation by interacting with its controls."
+        "playArea": "The play area shows a photon striking an electron at rest, the scattered photon and the recoiling electron, the triangle formed by their momenta, a table of measurements, and a graph.",
+        "controlArea": "The control area sets the incident photon's energy, the scattering angle, whether the target has bound electrons, and which graph is shown. A detector can be fired at to build an energy spectrum.",
+        "interactionHint": "Change the scattering angle and compare the scattered wavelength with the incident one."
       },
-      "currentDetails": "The simulation is in its initial state.",
+      "currentDetailsPattern": "A photon of energy {{energy}} and wavelength {{wavelength}} scatters through {{angle}}. Its wavelength grows by {{shift}} to {{scatteredWavelength}}, and its energy falls to {{scatteredEnergy}}. The electron recoils at {{recoilAngle}} from the beam with {{kinetic}} of kinetic energy.",
       "controls": {
-        "exampleControl": "Example control"
+        "energy": "Incident photon energy",
+        "energyHelp": "Sets the photon energy on a logarithmic scale from 1 electronvolt to 10 megaelectronvolts.",
+        "presetHelp": "Sets the incident photon to this source.",
+        "angle": "Scattering angle",
+        "angleHelp": "Angle between the incident and the scattered photon, from 0 to 180 degrees.",
+        "includeBound": "Bound electrons too",
+        "graph": "Graph",
+        "graphHelp": "Chooses the graph: wavelength shift against angle, a spectrometer at the chosen angle, or the energy spectrum of a detector.",
+        "firePhotons": "Fire photons",
+        "firePhotonsHelp": "Sends photons into the detector and counts the energy each one deposits.",
+        "clear": "Clear the spectrum",
+        "clearHelp": "Empties the detector's histogram."
       }
     },
     "xrayTube": {
       "screenSummary": {
-        "playArea": "The play area shows the main simulation content.",
-        "controlArea": "The control area has a Reset All button that returns the simulation to its starting state.",
-        "interactionHint": "Explore the simulation by interacting with its controls."
+        "playArea": "The play area shows an X-ray tube with electrons crossing from the cathode to the anode, the inner shells of an anode atom, and the spectrum of the X-rays produced.",
+        "controlArea": "The control area sets the tube voltage, the tube current, the anode metal, and whether the spectrum is plotted against wavelength or photon energy. A Moseley plot can be shown.",
+        "interactionHint": "Raise the voltage and watch the short-wavelength limit move while the characteristic lines stay where they are."
       },
-      "currentDetails": "The simulation is in its initial state.",
+      "currentDetailsPattern": "A {{target}} anode at {{voltage}} kilovolts. No photon has a wavelength shorter than {{minimumWavelength}} or an energy above {{maximumEnergy}}. Characteristic lines present: {{lines}}.",
+      "noLines": "none",
       "controls": {
-        "exampleControl": "Example control"
+        "voltage": "Tube voltage",
+        "voltageHelp": "Accelerating voltage between cathode and anode, in kilovolts.",
+        "current": "Tube current",
+        "currentHelp": "Number of electrons reaching the anode each second. Changes the intensity of the whole spectrum, not its shape.",
+        "anode": "Anode metal",
+        "anodeHelp": "Chooses the metal the electrons strike.",
+        "axis": "Horizontal axis of the spectrum",
+        "axisHelp": "Plots the spectrum against wavelength or against photon energy.",
+        "showMoseley": "Moseley plot",
+        "presetHelp": "Sets the voltage and anode of this example."
       }
     },
     "pairProduction": {
       "screenSummary": {
-        "playArea": "The play area shows the main simulation content.",
-        "controlArea": "The control area has a Reset All button that returns the simulation to its starting state.",
-        "interactionHint": "Explore the simulation by interacting with its controls."
+        "playArea": "The play area shows a photon arriving from the left, the electron and positron it may produce, and bars comparing the energy and the momentum before and after.",
+        "controlArea": "The control area sets the photon energy, whether a nucleus is nearby, how the kinetic energy is shared between the electron and the positron, and whether a magnetic field curves their tracks.",
+        "interactionHint": "Lower the photon energy below 1.022 megaelectronvolts, then remove the nucleus."
       },
-      "currentDetails": "The simulation is in its initial state.",
+      "currentDetailsPattern": "A photon of {{energy}}, {{surroundings}}. {{status}}.",
+      "productsPattern": "The electron takes {{electronKinetic}} and the positron {{positronKinetic}} of kinetic energy. The nucleus takes {{nucleusMomentum}} of momentum and only {{nucleusKinetic}} of energy.",
       "controls": {
-        "exampleControl": "Example control"
+        "energy": "Photon energy",
+        "energyHelp": "Photon energy in megaelectronvolts. A pair needs at least 1.022.",
+        "presetHelp": "Sets the photon energy to this value.",
+        "surroundings": "Surroundings",
+        "surroundingsHelp": "Chooses whether the photon passes near a nucleus or travels through empty space.",
+        "nucleus": "Nucleus",
+        "nucleusHelp": "Chooses the nucleus the photon passes.",
+        "share": "Electron's share of the kinetic energy",
+        "shareHelp": "Percentage of the available kinetic energy carried by the electron. The positron takes the rest.",
+        "magneticField": "Magnetic field"
       }
     },
     "annihilation": {
       "screenSummary": {
-        "playArea": "The play area shows the main simulation content.",
-        "controlArea": "The control area has a Reset All button that returns the simulation to its starting state.",
-        "interactionHint": "Explore the simulation by interacting with its controls."
+        "playArea": "The play area shows a positron meeting an electron at rest and the two photons that leave, a table of their energies and directions, and a ring of detectors around a tracer.",
+        "controlArea": "The control area sets the positron's kinetic energy and the direction in which the photons are emitted, and offers a single-photon alternative. The scanner can record annihilations and the tracer can be hidden.",
+        "interactionHint": "Start with the positron at rest, then give it kinetic energy and watch the photons stop being back to back."
       },
-      "currentDetails": "The simulation is in its initial state.",
+      "currentDetailsPattern": "A positron with {{kinetic}} of kinetic energy annihilates with an electron at rest. Photon 1 carries {{energy1}} at {{angle1}}, photon 2 carries {{energy2}} at {{angle2}}. The angle between them is {{opening}}.",
       "controls": {
-        "exampleControl": "Example control"
+        "kinetic": "Positron kinetic energy",
+        "kineticHelp": "Kinetic energy of the positron in megaelectronvolts. Zero is annihilation at rest.",
+        "cmAngle": "Emission angle",
+        "cmAngleHelp": "Direction of photon 1 in the centre-of-momentum frame, measured from the positron's direction of travel.",
+        "onePhoton": "Try a single photon",
+        "petRun": "Record annihilations",
+        "petRunHelp": "Starts or stops the scanner. Each annihilation adds a line between the two detectors that fired.",
+        "petClear": "Clear the scanner",
+        "petClearHelp": "Removes the recorded lines.",
+        "petShowTracer": "Show the tracer",
+        "tracer": "Tracer",
+        "tracerHelp": "Move the tracer inside the detector ring with the arrow keys or by dragging."
       }
     }
   },
   "preferences": {
     "title": "Simulation",
-    "exampleToggle": "Example Toggle"
+    "showEquations": "Show equations"
   }
 }

@@ -46,29 +46,12 @@ const stringProperties = LocalizedString.getNestedStringProperties({
 });
 
 /**
- * Explicit `a11y` shape exposed by {@link StringManager.getA11yStrings}.
- * Keep this in sync with the `a11y` key in `strings_en.json` — a locale key
- * rename that is not mirrored here fails at the getter return (not silently).
- */
-export type PhotonInteractionsA11yStrings = {
-  readonly screenSummary: {
-    readonly playAreaStringProperty: ReadOnlyProperty<string>;
-    readonly controlAreaStringProperty: ReadOnlyProperty<string>;
-    readonly interactionHintStringProperty: ReadOnlyProperty<string>;
-  };
-  readonly currentDetailsStringProperty: ReadOnlyProperty<string>;
-  readonly controls: {
-    readonly exampleControlStringProperty: ReadOnlyProperty<string>;
-  };
-};
-
-/**
  * Explicit Preferences → Simulation labels from {@link StringManager.getPreferences}.
- * Same sync rule as {@link PhotonInteractionsA11yStrings}.
+ * Keep in sync with the `preferences` key in `strings_en.json`.
  */
 export type PhotonInteractionsPreferenceStrings = {
   readonly titleStringProperty: ReadOnlyProperty<string>;
-  readonly exampleToggleStringProperty: ReadOnlyProperty<string>;
+  readonly showEquationsStringProperty: ReadOnlyProperty<string>;
 };
 
 /**
@@ -116,17 +99,42 @@ export class StringManager {
     };
   }
 
+  /** Value patterns and vocabulary shared by every screen. */
+  public getCommonStrings() {
+    return stringProperties.common;
+  }
+
+  /** Visible strings for the Compton screen. */
+  public getComptonStrings() {
+    return stringProperties.compton;
+  }
+
+  /** Visible strings for the X-Ray Tube screen. */
+  public getXRayTubeStrings() {
+    return stringProperties.xrayTube;
+  }
+
+  /** Visible strings for the Pair Production screen. */
+  public getPairProductionStrings() {
+    return stringProperties.pairProduction;
+  }
+
+  /** Visible strings for the Annihilation screen. */
+  public getAnnihilationStrings() {
+    return stringProperties.annihilation;
+  }
+
   /** Accessibility strings for the Compton screen. */
   public getComptonA11yStrings() {
     return stringProperties.a11y.compton;
   }
 
-  /** Accessibility strings for the XRayTube screen. */
+  /** Accessibility strings for the X-Ray Tube screen. */
   public getXRayTubeA11yStrings() {
     return stringProperties.a11y.xrayTube;
   }
 
-  /** Accessibility strings for the PairProduction screen. */
+  /** Accessibility strings for the Pair Production screen. */
   public getPairProductionA11yStrings() {
     return stringProperties.a11y.pairProduction;
   }

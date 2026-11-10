@@ -41,21 +41,25 @@ onReadyToLaunch(() => {
       name: stringManager.getScreenNames().comptonStringProperty,
       tandem: Tandem.ROOT.createTandem("comptonScreen"),
       backgroundColorProperty: PhotonInteractionsColors.backgroundColorProperty,
+      showEquationsProperty: simPreferences.showEquationsProperty,
     }),
     new XRayTubeScreen({
       name: stringManager.getScreenNames().xrayTubeStringProperty,
       tandem: Tandem.ROOT.createTandem("xrayTubeScreen"),
       backgroundColorProperty: PhotonInteractionsColors.backgroundColorProperty,
+      showEquationsProperty: simPreferences.showEquationsProperty,
     }),
     new PairProductionScreen({
       name: stringManager.getScreenNames().pairProductionStringProperty,
       tandem: Tandem.ROOT.createTandem("pairProductionScreen"),
       backgroundColorProperty: PhotonInteractionsColors.backgroundColorProperty,
+      showEquationsProperty: simPreferences.showEquationsProperty,
     }),
     new AnnihilationScreen({
       name: stringManager.getScreenNames().annihilationStringProperty,
       tandem: Tandem.ROOT.createTandem("annihilationScreen"),
       backgroundColorProperty: PhotonInteractionsColors.backgroundColorProperty,
+      showEquationsProperty: simPreferences.showEquationsProperty,
     }),
   ];
 

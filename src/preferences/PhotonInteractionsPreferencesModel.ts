@@ -15,18 +15,18 @@ import PhotonInteractionsNamespace from "../PhotonInteractionsNamespace.js";
 import photonInteractionsQueryParameters from "./photonInteractionsQueryParameters.js";
 
 export class PhotonInteractionsPreferencesModel {
-  /** Example preference; initial value comes from the `exampleToggle` query parameter. */
-  public readonly exampleToggleProperty: BooleanProperty;
+  /** Whether each screen shows its governing equation; initial value from the `showEquations` query parameter. */
+  public readonly showEquationsProperty: BooleanProperty;
 
   public constructor(tandem?: Tandem) {
-    this.exampleToggleProperty = new BooleanProperty(
-      photonInteractionsQueryParameters.exampleToggle,
-      tandem ? { tandem: tandem.createTandem("exampleToggleProperty") } : undefined,
+    this.showEquationsProperty = new BooleanProperty(
+      photonInteractionsQueryParameters.showEquations,
+      tandem ? { tandem: tandem.createTandem("showEquationsProperty") } : undefined,
     );
   }
 
   public reset(): void {
-    this.exampleToggleProperty.reset();
+    this.showEquationsProperty.reset();
   }
 }
 
