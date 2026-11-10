@@ -1,164 +1,280 @@
 /**
  * PairProductionScreenView.ts
  *
- * The top-level view for the simulation screen.
+ * Layout for the Pair Production screen:
  *
- * All visual nodes are added here. Follow these conventions:
- *   - Use this.layoutBounds for positioning (never magic pixel values)
- *   - Keep a ResetAllButton that calls model.reset() and this.reset()
- *   - Override step(dt) for frame-by-frame animation
- *
- * ── Adding content ────────────────────────────────────────────────────────────
- * 1. Create Node subclasses in separate files (e.g. PhotonInteractionsControlPanel.ts)
- * 2. Instantiate them here and call this.addChild(...)
- * 3. Link them to model properties:
- *      model.isRunningProperty.link( isRunning => { ... } );
- *
- * ── Layout bounds ─────────────────────────────────────────────────────────────
- * SceneryStack uses a virtual 1024×618 coordinate space by default.
- * this.layoutBounds gives you the full rectangle; use it for alignment:
- *   center, minX, maxX, minY, maxY, width, height
+ *   left     the event, replayed; below it, the energy and momentum budgets
+ *   middle   what the products carry, and the equation
+ *   right    photon energy, surroundings, energy sharing and field; Reset All
  */
 
+import { DerivedProperty, type TReadOnlyProperty } from "scenerystack/axon";
+import { Range } from "scenerystack/dot";
 import { type EmptySelfOptions, optionize } from "scenerystack/phet-core";
-import { Node, Rectangle, Text } from "scenerystack/scenery";
+import { StringUtils } from "scenerystack/phetcommon";
+import { HBox, Node, VBox } from "scenerystack/scenery";
 import { ResetAllButton } from "scenerystack/scenery-phet";
 import { ScreenView, type ScreenViewOptions } from "scenerystack/sim";
+import { betaOfKineticEnergy } from "../../common/model/fourMomentum.js";
 import { FLAT_RESET_ALL_BUTTON_OPTIONS } from "../../common/PhotonInteractionsButtonOptions.js";
+import { PhotonInteractionsPanel } from "../../common/PhotonInteractionsPanel.js";
+import { formatEnergy, formatSignificant } from "../../common/view/chartUtils.js";
+import {
+  createCheckbox,
+  createNumberControl,
+  createPushButton,
+  createRadioButtonGroup,
+  createReadoutRow,
+  createSectionHeader,
+} from "../../common/view/controlHelpers.js";
+import { EquationNode } from "../../common/view/EquationNode.js";
 import { StringManager } from "../../i18n/StringManager.js";
 import PhotonInteractionsColors from "../../PhotonInteractionsColors.js";
-import { SCREEN_VIEW_MARGIN } from "../../PhotonInteractionsConstants.js";
+import { CONTROL_WIDTH, PAIR, PHYSICS, SCREEN_VIEW_MARGIN } from "../../PhotonInteractionsConstants.js";
 import type { PairProductionModel } from "../model/PairProductionModel.js";
+import { PAIR_REST_ENERGY_KEV, type PairEvent } from "../model/pairProduction.js";
+import { PairBudgetNode } from "./PairBudgetNode.js";
+import { PairEventNode } from "./PairEventNode.js";
 import { PairProductionScreenSummaryContent } from "./PairProductionScreenSummaryContent.js";
 
 export type PairProductionScreenViewOptions = ScreenViewOptions;
 
+const MIDDLE_WIDTH = 290;
+const READOUT_WIDTH = MIDDLE_WIDTH - 24;
+const PRESET_BUTTON_TEXT_WIDTH = 58;
+const NO_VALUE = "—";
+
 export class PairProductionScreenView extends ScreenView {
   public constructor(
     model: PairProductionModel,
-    _showEquationsProperty: unknown,
+    showEquationsProperty: TReadOnlyProperty<boolean>,
     providedOptions?: PairProductionScreenViewOptions,
   ) {
-    // ── Accessibility: screen summary ───────────────────────────────────────────
-    // The screen summary is the first thing a screen-reader user encounters. It
-    // is registered here, in the ScreenView's super() options, so every sim wires
-    // it the same way. See PairProductionScreenSummaryContent for the four content regions.
     const options = optionize<PairProductionScreenViewOptions, EmptySelfOptions, ScreenViewOptions>()(
-      {
-        screenSummaryContent: new PairProductionScreenSummaryContent(model),
-      },
+      { screenSummaryContent: new PairProductionScreenSummaryContent(model) },
       providedOptions,
     );
     super(options);
 
-    // ── Background ────────────────────────────────────────────────────────────
-    // A full-screen rectangle that follows the active color profile.
-    // Replace or remove once you add real content.
-    const backgroundRect = new Rectangle(0, 0, this.layoutBounds.width, this.layoutBounds.height, {
-      fill: PhotonInteractionsColors.backgroundColorProperty,
+    const bounds = this.layoutBounds;
+    const sm = StringManager.getInstance();
+    const strings = sm.getPairProductionStrings();
+    const common = sm.getCommonStrings();
+    const a11y = sm.getPairProductionA11yStrings().controls;
+
+    // ── Left: event and budgets ─────────────────────────────────────────────────
+    const eventNode = new PairEventNode(model);
+    eventNode.left = bounds.minX + SCREEN_VIEW_MARGIN;
+    eventNode.top = bounds.minY + SCREEN_VIEW_MARGIN;
+
+    const budget = new PairBudgetNode(model);
+    budget.left = eventNode.left;
+    budget.top = eventNode.bottom + 12;
+
+    // ── Middle: products and equation ───────────────────────────────────────────
+    const fromEvent = (format: (event: PairEvent) => string): TReadOnlyProperty<string> =>
+      new DerivedProperty([model.eventProperty], (event) => (event ? format(event) : NO_VALUE));
+    const speed = (kinetic: (event: PairEvent) => number): TReadOnlyProperty<string> =>
+      new DerivedProperty([model.eventProperty, common.speedPatternStringProperty], (event, pattern) =>
+        event
+          ? StringUtils.fillIn(pattern, {
+              value: formatSignificant(betaOfKineticEnergy(PHYSICS.ELECTRON_REST_ENERGY_KEV, kinetic(event)), 3),
+            })
+          : NO_VALUE,
+      );
+    const readouts = new PhotonInteractionsPanel(
+      new VBox({
+        align: "left",
+        spacing: 5,
+        children: [
+          createSectionHeader(strings.readoutsHeadingStringProperty),
+          createReadoutRow(
+            strings.electronEnergyStringProperty,
+            fromEvent((event) => formatEnergy(event.electronKinetic, 4)),
+            PhotonInteractionsColors.electronColorProperty,
+            READOUT_WIDTH,
+          ),
+          createReadoutRow(
+            strings.positronEnergyStringProperty,
+            fromEvent((event) => formatEnergy(event.positronKinetic, 4)),
+            PhotonInteractionsColors.positronColorProperty,
+            READOUT_WIDTH,
+          ),
+          createReadoutRow(
+            strings.electronSpeedStringProperty,
+            speed((event) => event.electronKinetic),
+            PhotonInteractionsColors.electronColorProperty,
+            READOUT_WIDTH,
+          ),
+          createReadoutRow(
+            strings.positronSpeedStringProperty,
+            speed((event) => event.positronKinetic),
+            PhotonInteractionsColors.positronColorProperty,
+            READOUT_WIDTH,
+          ),
+          createReadoutRow(
+            strings.nucleusMomentumStringProperty,
+            fromEvent((event) => formatEnergy(event.nucleusMomentum, 3, "/c")),
+            PhotonInteractionsColors.nucleusColorProperty,
+            READOUT_WIDTH,
+          ),
+          createReadoutRow(
+            strings.nucleusKineticStringProperty,
+            fromEvent((event) => formatEnergy(event.nucleusKinetic, 3)),
+            PhotonInteractionsColors.nucleusColorProperty,
+            READOUT_WIDTH,
+          ),
+          createReadoutRow(
+            strings.shortfallStringProperty,
+            new DerivedProperty([model.energyProperty, model.shortfallProperty], (energy, shortfall) =>
+              energy > PAIR_REST_ENERGY_KEV ? formatEnergy(shortfall, 3, "/c") : NO_VALUE,
+            ),
+            PhotonInteractionsColors.limitColorProperty,
+            READOUT_WIDTH,
+          ),
+        ],
+      }),
+      { minWidth: MIDDLE_WIDTH },
+    );
+    readouts.left = eventNode.right + 14;
+    readouts.top = eventNode.top;
+
+    const equations = new VBox({
+      align: "left",
+      spacing: 8,
+      children: [
+        new EquationNode("E<sub>γ</sub> = 2mₑc² + K₋ + K₊", showEquationsProperty, MIDDLE_WIDTH),
+        new EquationNode("2mₑc² = 1.022 MeV", showEquationsProperty, MIDDLE_WIDTH),
+        new EquationNode("r = p / eB", showEquationsProperty, MIDDLE_WIDTH),
+      ],
     });
-    this.addChild(backgroundRect);
+    equations.left = readouts.left;
+    equations.top = readouts.bottom + 14;
 
-    // ── Placeholder label ─────────────────────────────────────────────────────
-    // Replace this with your actual simulation content.
-    const placeholderText = new Text(StringManager.getInstance().getScreenNames().pairProductionStringProperty, {
-      font: "bold 36px sans-serif",
-      fill: PhotonInteractionsColors.textColorProperty,
-      center: this.layoutBounds.center,
+    // ── Right: controls ─────────────────────────────────────────────────────────
+    const energyControl = createNumberControl(
+      model.energyMeVProperty,
+      new Range(PAIR.ENERGY_MIN_MEV, PAIR.ENERGY_MAX_MEV),
+      {
+        titleProperty: strings.energyStringProperty,
+        valuePatternProperty: common.megaelectronvoltsPatternStringProperty,
+        accessibleName: a11y.energyStringProperty,
+        accessibleHelpText: a11y.energyHelpStringProperty,
+        decimalPlaces: 2,
+        delta: 0.01,
+      },
+    );
+    const preset = (labelProperty: TReadOnlyProperty<string>, energyMeV: number) =>
+      createPushButton(labelProperty, {
+        accessibleName: labelProperty,
+        accessibleHelpText: a11y.presetHelpStringProperty,
+        listener: () => {
+          model.energyMeVProperty.value = energyMeV;
+        },
+        maxTextWidth: PRESET_BUTTON_TEXT_WIDTH,
+      });
+    const presetButtons = [
+      preset(strings.presets.thresholdStringProperty, 1.03),
+      preset(strings.presets.problemStringProperty, 2.5),
+      preset(strings.presets.workedExampleStringProperty, 3),
+    ];
+    const photonPanel = new PhotonInteractionsPanel(
+      new VBox({
+        align: "left",
+        spacing: 8,
+        children: [
+          createSectionHeader(strings.photonHeadingStringProperty),
+          energyControl,
+          new HBox({ spacing: 5, children: presetButtons }),
+        ],
+      }),
+      { minWidth: CONTROL_WIDTH + 24 },
+    );
+
+    const surroundingsRadio = createRadioButtonGroup(
+      model.surroundingsProperty,
+      [
+        {
+          value: "lead" as const,
+          labelProperty: strings.surroundings.leadStringProperty,
+          accessibleName: strings.surroundings.leadStringProperty,
+        },
+        {
+          value: "carbon" as const,
+          labelProperty: strings.surroundings.carbonStringProperty,
+          accessibleName: strings.surroundings.carbonStringProperty,
+        },
+        {
+          value: "vacuum" as const,
+          labelProperty: strings.surroundings.vacuumStringProperty,
+          accessibleName: strings.surroundings.vacuumStringProperty,
+        },
+      ],
+      { accessibleName: a11y.surroundingsStringProperty, accessibleHelpText: a11y.surroundingsHelpStringProperty },
+    );
+    const surroundingsPanel = new PhotonInteractionsPanel(
+      new VBox({
+        align: "left",
+        spacing: 8,
+        children: [createSectionHeader(strings.surroundingsHeadingStringProperty), surroundingsRadio],
+      }),
+      { minWidth: CONTROL_WIDTH + 24 },
+    );
+
+    const shareControl = createNumberControl(
+      model.sharePercentProperty,
+      new Range(100 * PAIR.SHARE_MIN, 100 * PAIR.SHARE_MAX),
+      {
+        titleProperty: strings.shareStringProperty,
+        valuePatternProperty: common.percentPatternStringProperty,
+        accessibleName: a11y.shareStringProperty,
+        accessibleHelpText: a11y.shareHelpStringProperty,
+        decimalPlaces: 0,
+        delta: 1,
+      },
+    );
+    const fieldCheckbox = createCheckbox(
+      model.fieldOnProperty,
+      strings.magneticFieldStringProperty,
+      a11y.magneticFieldStringProperty,
+    );
+    const pairPanel = new PhotonInteractionsPanel(
+      new VBox({
+        align: "left",
+        spacing: 8,
+        children: [createSectionHeader(strings.pairHeadingStringProperty), shareControl, fieldCheckbox],
+      }),
+      { minWidth: CONTROL_WIDTH + 24 },
+    );
+
+    const rightColumn = new VBox({
+      spacing: 10,
+      align: "right",
+      children: [photonPanel, surroundingsPanel, pairPanel],
     });
-    this.addChild(placeholderText);
+    rightColumn.right = bounds.maxX - SCREEN_VIEW_MARGIN;
+    rightColumn.top = bounds.minY + SCREEN_VIEW_MARGIN;
 
-    // ── Accessibility: per-control names ────────────────────────────────────────
-    // EVERY interactive node must carry an `accessibleName` (and an
-    // `accessibleHelpText` where useful), sourced from the StringManager `a11y`
-    // string group — never a hard-coded English literal. Sun/scenery-phet controls
-    // (NumberControl, Checkbox, ComboBox, AquaRadioButtonGroup, …) accept it as an
-    // option; a draggable plain Node needs `tagName: "div", focusable: true` too.
-    // Example (uncomment and adapt when you add a real control):
-    //
-    //   const a11y = StringManager.getInstance().getPairProductionA11yStrings();
-    //   const exampleButton = new RectangularPushButton({
-    //     ...FLAT_RECTANGULAR_BUTTON_OPTIONS, // flat appearance, not SceneryStack's default 3-D look
-    //     content: someIcon,
-    //     listener: () => model.doSomething(),
-    //     accessibleName: a11y.controls.exampleControlStringProperty,
-    //   });
-    //   this.addChild(exampleButton);
-
-    // ── Reset All button ──────────────────────────────────────────────────────
-    // Always position at bottom-right (PhET convention).
     const resetAllButton = new ResetAllButton({
       ...FLAT_RESET_ALL_BUTTON_OPTIONS,
       listener: () => {
+        this.interruptSubtreeInput();
         model.reset();
-        this.reset();
       },
-      right: this.layoutBounds.maxX - SCREEN_VIEW_MARGIN,
-      bottom: this.layoutBounds.maxY - SCREEN_VIEW_MARGIN,
+      right: bounds.maxX - SCREEN_VIEW_MARGIN,
+      bottom: bounds.maxY - SCREEN_VIEW_MARGIN,
     });
-    this.addChild(resetAllButton);
 
-    // ── Accessibility: keyboard / reading traversal order ───────────────────────
-    // Make the parallel DOM (Tab order and screen-reader reading order)
-    // deterministic and independent of child z-order. ScreenView throws if you
-    // set pdomOrder on itself, so add a lightweight wrapper Node that "borrows"
-    // the interactive nodes in the order a user should reach them — Reset All
-    // last. Non-interactive decoration (background, placeholder) is omitted.
-    this.addChild(
+    this.children = [
+      eventNode,
+      budget,
+      readouts,
+      equations,
+      rightColumn,
+      resetAllButton,
       new Node({
-        pdomOrder: [
-          // TODO: add the sim's interactive nodes here, in traversal order
-          resetAllButton,
-        ],
+        pdomOrder: [energyControl, ...presetButtons, surroundingsRadio, shareControl, fieldCheckbox, resetAllButton],
       }),
-    );
+    ];
   }
-
-  /**
-   * Resets view-side state (animations, panel visibility, etc.).
-   * Called by the Reset All button listener.
-   */
-  public reset(): void {
-    // TODO: reset any view-side state here
-  }
-
-  /**
-   * Steps the view forward by dt seconds for animation.
-   * @param _dt - elapsed time in seconds
-   */
-  public override step(_dt: number): void {
-    // TODO: implement animation updates here
-  }
-
-  // ── Accessibility / listeners: dispose ─────────────────────────────────────
-  // ScreenView is `isDisposable: false` and lives for the whole sim, so this
-  // class rarely needs dispose(). Child Nodes (and a live currentDetails
-  // DerivedProperty you own on a short-lived object) do. When you add
-  // DerivedProperty / Multilink / Property.link against model state, keep the
-  // references and tear them down — forks copy what they see. Pattern:
-  //
-  // private readonly disposePairProductionScreenView: () => void;
-  //
-  // // in the constructor, after creating the listeners:
-  // const statusMultilink = Multilink.multilink(
-  //   [model.someProperty, model.otherProperty],
-  //   (a, b) => { /* update view from model */ },
-  // );
-  // const detailsProperty = new DerivedProperty(
-  //   [model.stateProperty],
-  //   (state) => `State: ${state}`,
-  // ); // → pass as currentDetailsContent in PairProductionScreenSummaryContent
-  // const onExternal = (v: number) => { /* … */ };
-  // model.externalProperty.link(onExternal); // Property you do NOT own
-  //
-  // this.disposePairProductionScreenView = () => {
-  //   statusMultilink.dispose();                 // Multilink you created
-  //   detailsProperty.dispose();                 // DerivedProperty you created
-  //   model.externalProperty.unlink(onExternal); // undo external link
-  // };
-  //
-  // public override dispose(): void {
-  //   this.disposePairProductionScreenView();
-  //   super.dispose();
-  // }
 }

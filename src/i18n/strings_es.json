@@ -121,18 +121,15 @@
     },
     "surroundingsHeading": "Surroundings",
     "surroundings": {
-      "nucleus": "Near a nucleus",
+      "lead": "Near a lead nucleus",
+      "carbon": "Near a carbon nucleus",
       "vacuum": "Empty space"
-    },
-    "nuclei": {
-      "carbon": "Carbon-12 nucleus",
-      "lead": "Lead-208 nucleus"
     },
     "pairHeading": "Pair",
     "share": "Electron's share",
     "magneticField": "Magnetic field, 1 T",
     "eventTitle": "Event",
-    "fieldLabel": "B into the screen",
+    "fieldLabel": "B out of the screen",
     "budgetTitle": "Energy budget",
     "restEnergy": "rest energy 2mₑc²",
     "electronKinetic": "electron K",
@@ -155,7 +152,11 @@
     "positronSpeed": "Positron speed",
     "nucleusMomentum": "Nucleus recoil p",
     "nucleusKinetic": "Nucleus recoil K",
-    "shortfall": "Momentum shortfall"
+    "shortfall": "Momentum shortfall",
+    "photonEnergy": "photon E",
+    "restEnergyNeeded": "2mₑc² needed",
+    "pairEnergy": "pair",
+    "shortfallPattern": "{{message}} ({{shortfall}})"
   },
   "annihilation": {
     "positronHeading": "Positron",
@@ -243,9 +244,7 @@
         "energyHelp": "Photon energy in megaelectronvolts. A pair needs at least 1.022.",
         "presetHelp": "Sets the photon energy to this value.",
         "surroundings": "Surroundings",
-        "surroundingsHelp": "Chooses whether the photon passes near a nucleus or travels through empty space.",
-        "nucleus": "Nucleus",
-        "nucleusHelp": "Chooses the nucleus the photon passes.",
+        "surroundingsHelp": "Chooses whether the photon passes near a lead nucleus, near a carbon nucleus, or travels through empty space.",
         "share": "Electron's share of the kinetic energy",
         "shareHelp": "Percentage of the available kinetic energy carried by the electron. The positron takes the rest.",
         "magneticField": "Magnetic field"
