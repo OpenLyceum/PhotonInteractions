@@ -23,7 +23,10 @@ export type LineOfResponse = {
 export const detectorPosition = (index: number, count: number, ringRadius: number): Vector2 =>
   Vector2.createPolar(ringRadius, (2 * Math.PI * index) / count);
 
-/** Index of the detector that a point on the ring at the given polar angle falls in. */
+/**
+ * Index of the detector that a point on the ring at the given polar angle falls in.
+ * @internal Exported for unit tests; not part of the application API.
+ */
 export const detectorIndexAtAngle = (angle: number, count: number): number => {
   const index = Math.round((angle / (2 * Math.PI)) * count) % count;
   return index < 0 ? index + count : index;
@@ -55,7 +58,10 @@ export const lineOfResponse = (
   };
 };
 
-/** Perpendicular distance from a point to the infinite line through a and b. */
+/**
+ * Perpendicular distance from a point to the infinite line through a and b.
+ * @internal Exported for unit tests; not part of the application API.
+ */
 export const distanceToLine = (point: Vector2, a: Vector2, b: Vector2): number => {
   const length = a.distance(b);
   return length === 0

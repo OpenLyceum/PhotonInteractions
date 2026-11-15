@@ -58,7 +58,10 @@ export const PHYSICS = {
   CURVATURE_MM_T_PER_MEV: 3.33564095,
 } as const;
 
-/** Compton wavelength of the electron h/mₑc, pm. */
+/**
+ * Compton wavelength of the electron h/mₑc, pm.
+ * @internal Exported for unit tests; not part of the application API.
+ */
 export const COMPTON_WAVELENGTH_PM = PHYSICS.HC_KEV_PM / PHYSICS.ELECTRON_REST_ENERGY_KEV;
 
 // ── Compton screen ────────────────────────────────────────────────────────────

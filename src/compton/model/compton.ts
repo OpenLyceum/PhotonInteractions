@@ -36,7 +36,10 @@ export const recoilKineticEnergy = (energy: number, theta: number, targetRestEne
 export const recoilAngle = (energy: number, theta: number, targetRestEnergy = ELECTRON): number =>
   Math.atan2(1, (1 + energy / targetRestEnergy) * Math.tan(theta / 2));
 
-/** Momentum of the recoiling particle, keV/c, from the momentum triangle. */
+/**
+ * Momentum of the recoiling particle, keV/c, from the momentum triangle.
+ * @internal Exported for unit tests; not part of the application API.
+ */
 export const recoilMomentum = (energy: number, theta: number, targetRestEnergy = ELECTRON): number => {
   const scattered = scatteredEnergy(energy, theta, targetRestEnergy);
   return Math.sqrt(Math.max(0, energy * energy + scattered * scattered - 2 * energy * scattered * Math.cos(theta)));
@@ -52,6 +55,7 @@ export const comptonEdge = (energy: number): number => recoilKineticEnergy(energ
  *     dσ/dΩ = ½ P² (P + 1/P − sin²θ),      P = E′/E.
  *
  * At low energy P → 1 and this is Thomson's ½(1 + cos²θ).
+ * @internal Exported for unit tests; not part of the application API.
  */
 export const kleinNishina = (energy: number, theta: number): number => {
   const ratio = scatteredEnergy(energy, theta) / energy;
@@ -63,6 +67,7 @@ export const kleinNishina = (energy: number, theta: number): number => {
  * Klein–Nishina spectrum of the recoil electron's kinetic energy T, dσ/dT, in
  * units of πrₑ²/mₑc². Zero above the Compton edge. This is the shape of the
  * continuum a gamma-ray detector records.
+ * @internal Exported for unit tests; not part of the application API.
  */
 export const kleinNishinaRecoilSpectrum = (energy: number, kinetic: number): number => {
   if (kinetic < 0 || kinetic > comptonEdge(energy)) {
@@ -101,6 +106,7 @@ export const sampleScatteringAngle = (energy: number, random: () => number): num
  * A one-parameter stand-in for the incoherent scattering function: the shifted
  * fraction rises as x²/(x² + x₀²), x = sin(θ/2)/λ, the momentum transfer. Visible
  * light (x ≈ 0) is all unshifted; gamma rays are all shifted.
+ * @internal Exported for unit tests; not part of the application API.
  */
 export const shiftedFraction = (wavelengthPm: number, theta: number): number => {
   const x = Math.sin(theta / 2) / wavelengthPm;

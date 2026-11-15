@@ -27,7 +27,10 @@ import type { XRayLine, XRayTarget } from "./xrayTargets.js";
 /** Duane–Hunt limit λ_min = hc/eV, pm, for a tube voltage in kV. */
 export const duaneHuntWavelength = (voltageKV: number): number => wavelengthOfEnergy(voltageKV);
 
-/** Kramers continuum: radiated energy per unit wavelength (arbitrary units). */
+/**
+ * Kramers continuum: radiated energy per unit wavelength (arbitrary units).
+ * @internal Exported for unit tests; not part of the application API.
+ */
 export const kramersContinuum = (wavelengthPm: number, voltageKV: number, atomicNumber: number): number => {
   const minimum = duaneHuntWavelength(voltageKV);
   return wavelengthPm > minimum ? (atomicNumber * (wavelengthPm / minimum - 1)) / wavelengthPm ** 3 : 0;
@@ -36,7 +39,10 @@ export const kramersContinuum = (wavelengthPm: number, voltageKV: number, atomic
 /** Whether the tube voltage is high enough to excite a line. */
 export const isLineExcited = (line: XRayLine, voltageKV: number): boolean => voltageKV > line.edgeKeV;
 
-/** Peak height of a characteristic line, in the units of {@link kramersContinuum}. Zero below its edge. */
+/**
+ * Peak height of a characteristic line, in the units of {@link kramersContinuum}. Zero below its edge.
+ * @internal Exported for unit tests; not part of the application API.
+ */
 export const lineStrength = (line: XRayLine, voltageKV: number, atomicNumber: number): number => {
   if (!isLineExcited(line, voltageKV)) {
     return 0;

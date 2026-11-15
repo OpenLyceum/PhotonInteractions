@@ -21,6 +21,7 @@ export const PAIR_REST_ENERGY_KEV = 2 * ELECTRON;
 /**
  * Exact threshold photon energy beside a nucleus of rest energy M, keV. Slightly
  * above 2mₑc², by the recoil energy the nucleus must take: 2mₑc²(1 + mₑ/M).
+ * @internal Exported for unit tests; not part of the application API.
  */
 export const pairThreshold = (nucleusRestEnergy: number): number =>
   PAIR_REST_ENERGY_KEV * (1 + ELECTRON / nucleusRestEnergy);
