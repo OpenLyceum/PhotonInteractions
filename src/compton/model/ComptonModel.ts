@@ -31,8 +31,8 @@ import {
   scatteredEnergy,
 } from "./compton.js";
 
-export const ComptonGraphValues = ["shift", "spectrometer", "detector"] as const;
-export type ComptonGraph = (typeof ComptonGraphValues)[number];
+const ComptonGraphValues = ["shift", "spectrometer", "detector"] as const;
+type ComptonGraph = (typeof ComptonGraphValues)[number];
 
 export class ComptonModel implements TModel {
   /** log₁₀ of the incident photon energy in keV. */

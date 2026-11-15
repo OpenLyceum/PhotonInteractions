@@ -22,7 +22,7 @@ import { COMPTON, FONTS } from "../../PhotonInteractionsConstants.js";
 import type { ComptonModel } from "../model/ComptonModel.js";
 
 export const COLLISION_WIDTH = 420;
-export const COLLISION_HEIGHT = 300;
+const COLLISION_HEIGHT = 300;
 
 const ORIGIN = new Vector2(180, 172);
 const INCIDENT_LENGTH = 150;

@@ -23,8 +23,8 @@ import { FONTS, PAIR } from "../../PhotonInteractionsConstants.js";
 import type { PairProductionModel, PairStatus } from "../model/PairProductionModel.js";
 import { trackRadiusMm } from "../model/pairProduction.js";
 
-export const EVENT_WIDTH = 420;
-export const EVENT_HEIGHT = 300;
+const EVENT_WIDTH = 420;
+const EVENT_HEIGHT = 300;
 
 const VERTEX = new Vector2(150, 160);
 const PHOTON_START_X = 12;

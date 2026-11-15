@@ -18,7 +18,7 @@ import { FONTS } from "../../PhotonInteractionsConstants.js";
 import type { ComptonModel } from "../model/ComptonModel.js";
 
 export const TRIANGLE_WIDTH = 290;
-export const TRIANGLE_HEIGHT = 158;
+const TRIANGLE_HEIGHT = 158;
 
 const INCIDENT_LENGTH = 112;
 const TAIL = new Vector2(TRIANGLE_WIDTH / 2 - 8, TRIANGLE_HEIGHT - 26);

@@ -27,8 +27,8 @@ import {
   xrayTargetById,
 } from "./xrayTargets.js";
 
-export const SpectrumAxisValues = ["wavelength", "energy"] as const;
-export type SpectrumAxis = (typeof SpectrumAxisValues)[number];
+const SpectrumAxisValues = ["wavelength", "energy"] as const;
+type SpectrumAxis = (typeof SpectrumAxisValues)[number];
 
 export class XRayTubeModel implements TModel {
   /** Accelerating voltage, kV. An electron arrives with this many keV. */

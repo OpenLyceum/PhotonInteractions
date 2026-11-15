@@ -28,10 +28,10 @@ import {
   pairEvent,
 } from "./pairProduction.js";
 
-export const SurroundingsValues = ["lead", "carbon", "vacuum"] as const;
+const SurroundingsValues = ["lead", "carbon", "vacuum"] as const;
 export type Surroundings = (typeof SurroundingsValues)[number];
 
-export const PairStatusValues = ["below", "allowed", "forbidden"] as const;
+const PairStatusValues = ["below", "allowed", "forbidden"] as const;
 export type PairStatus = (typeof PairStatusValues)[number];
 
 export class PairProductionModel implements TModel {

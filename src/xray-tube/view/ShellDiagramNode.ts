@@ -18,7 +18,7 @@ import { FONTS } from "../../PhotonInteractionsConstants.js";
 import type { XRayTubeModel } from "../model/XRayTubeModel.js";
 
 export const SHELL_WIDTH = 290;
-export const SHELL_HEIGHT = 150;
+const SHELL_HEIGHT = 150;
 
 const CENTER = new Vector2(74, 92);
 const SHELLS = [

@@ -23,8 +23,8 @@ import PhotonInteractionsColors from "../../PhotonInteractionsColors.js";
 import { FONTS, XRAY } from "../../PhotonInteractionsConstants.js";
 import type { XRayTubeModel } from "../model/XRayTubeModel.js";
 
-export const TUBE_WIDTH = 420;
-export const TUBE_HEIGHT = 200;
+const TUBE_WIDTH = 420;
+const TUBE_HEIGHT = 200;
 
 const AXIS_Y = 78;
 const CATHODE_X = 78;

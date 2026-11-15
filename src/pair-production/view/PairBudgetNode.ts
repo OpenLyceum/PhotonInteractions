@@ -22,8 +22,8 @@ import { FONTS } from "../../PhotonInteractionsConstants.js";
 import type { PairProductionModel } from "../model/PairProductionModel.js";
 import { PAIR_REST_ENERGY_KEV } from "../model/pairProduction.js";
 
-export const BUDGET_WIDTH = 420;
-export const BUDGET_HEIGHT = 246;
+const BUDGET_WIDTH = 420;
+const BUDGET_HEIGHT = 246;
 
 const BAR_LEFT = 104;
 const BAR_WIDTH = 258;

@@ -24,8 +24,8 @@ import PhotonInteractionsColors from "../../PhotonInteractionsColors.js";
 import { ANNIHILATION, FONTS, PHYSICS } from "../../PhotonInteractionsConstants.js";
 import type { AnnihilationModel } from "../model/AnnihilationModel.js";
 
-export const EVENT_WIDTH = 420;
-export const EVENT_HEIGHT = 300;
+const EVENT_WIDTH = 420;
+const EVENT_HEIGHT = 300;
 
 const VERTEX = new Vector2(190, 128);
 const PHOTON_MIN_LENGTH = 26;

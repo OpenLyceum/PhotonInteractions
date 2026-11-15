@@ -33,7 +33,7 @@ export const maximumPairMomentum = (energy: number): number =>
 export const momentumShortfall = (energy: number): number => energy - maximumPairMomentum(energy);
 
 /** Characteristic emission angle of a pair member of total energy E: θ ≈ mₑc²/E radians. */
-export const emissionAngle = (totalEnergy: number): number => Math.min(1, ELECTRON / totalEnergy);
+const emissionAngle = (totalEnergy: number): number => Math.min(1, ELECTRON / totalEnergy);
 
 export type PairEvent = {
   electron: FourMomentum;
