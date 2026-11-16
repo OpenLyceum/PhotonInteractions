@@ -138,8 +138,8 @@ export const PAIR = {
   /** Seconds one photon takes to arrive and its tracks to be drawn. */
   EVENT_PERIOD_S: 3,
   /** Rest energies of the two target nuclei, keV: ¹²C and ²⁰⁸Pb, less their electrons. */
-  CARBON_NUCLEUS_KEV: 12 * 931494.10242 - 6 * 510.99895,
-  LEAD_NUCLEUS_KEV: 207.9766521 * 931494.10242 - 82 * 510.99895,
+  CARBON_NUCLEUS_KEV: 12 * PHYSICS.ATOMIC_MASS_UNIT_KEV - 6 * PHYSICS.ELECTRON_REST_ENERGY_KEV,
+  LEAD_NUCLEUS_KEV: 207.9766521 * PHYSICS.ATOMIC_MASS_UNIT_KEV - 82 * PHYSICS.ELECTRON_REST_ENERGY_KEV,
 } as const;
 
 // ── Annihilation screen ───────────────────────────────────────────────────────
@@ -192,15 +192,15 @@ export const ANNIHILATION_EVENT_NODE_SETTINGS = {
   PHOTON_LENGTH_RANGE: 110,
   /** Drawn wiggle of a 511 keV photon, px; others scale with wavelength. */
   REST_WIGGLE_PX: 13,
-  /** Drawn wiggle of a 511 keV photon, px; others scale with wavelength. */
+  /** Minimum drawn length of the positron track, px. */
   POSITRON_MIN_LENGTH: 34,
-  /** Drawn wiggle of a 511 keV photon, px; others scale with wavelength. */
+  /** Extra positron-track length range above the minimum, px. */
   POSITRON_LENGTH_RANGE: 110,
-  /** Drawn wiggle of a 511 keV photon, px; others scale with wavelength. */
+  /** Left edge of the energy comparison bars, px. */
   BAR_LEFT: 150,
-  /** Drawn wiggle of a 511 keV photon, px; others scale with wavelength. */
+  /** Width of the energy comparison bars, px. */
   BAR_WIDTH: 250,
-  /** Drawn wiggle of a 511 keV photon, px; others scale with wavelength. */
+  /** Height of the energy comparison bars, px. */
   BAR_HEIGHT: 12,
   FRAME_CORNER_RADIUS: 6,
   TITLE_LEFT: 10,
@@ -254,11 +254,11 @@ export const PET_RING_NODE_SETTINGS = {
 
   /** Ring radius on screen, px. */
   RING_RADIUS_PX: 104,
-  /** Ring radius on screen, px. */
+  /** Detector crystal depth drawn outside the ring, px. */
   DETECTOR_DEPTH: 12,
-  /** Ring radius on screen, px. */
+  /** Tracer disc radius on the ring plane, px. */
   TRACER_RADIUS: 8,
-  /** Ring radius on screen, px. */
+  /** Keyboard step for moving the tracer, cm. */
   KEYBOARD_STEP_CM: 2,
   /** Lines opacity (dimensionless). */
   LINES_OPACITY: 0.45,
