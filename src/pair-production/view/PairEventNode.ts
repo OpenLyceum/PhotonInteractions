@@ -1,3 +1,4 @@
+import { PAIR_EVENT_NODE_SETTINGS } from "../../PhotonInteractionsConstants.js";
 /**
  * PairEventNode.ts
  *
@@ -23,18 +24,18 @@ import { FONTS, PAIR } from "../../PhotonInteractionsConstants.js";
 import type { PairProductionModel, PairStatus } from "../model/PairProductionModel.js";
 import { trackRadiusMm } from "../model/pairProduction.js";
 
-const EVENT_WIDTH = 420;
-const EVENT_HEIGHT = 300;
+const EVENT_WIDTH: number = PAIR_EVENT_NODE_SETTINGS.EVENT_WIDTH;
+const EVENT_HEIGHT: number = PAIR_EVENT_NODE_SETTINGS.EVENT_HEIGHT;
 
-const VERTEX = new Vector2(150, 160);
-const PHOTON_START_X = 12;
+const VERTEX = new Vector2(PAIR_EVENT_NODE_SETTINGS.VERTEX_X, PAIR_EVENT_NODE_SETTINGS.VERTEX_Y);
+const PHOTON_START_X: number = PAIR_EVENT_NODE_SETTINGS.PHOTON_START_X;
 /** Fraction of the animation the photon spends arriving. */
-const ARRIVAL = 0.3;
-const PIXELS_PER_MM = 8;
-const STRAIGHT_TRACK_LENGTH = 230;
-const MAX_TRACK_LENGTH = 420;
-const TRACK_STEP = 1.5;
-const PHOTON_WIGGLE_PX = 12;
+const ARRIVAL: number = PAIR_EVENT_NODE_SETTINGS.ARRIVAL;
+const PIXELS_PER_MM: number = PAIR_EVENT_NODE_SETTINGS.PIXELS_PER_MM;
+const STRAIGHT_TRACK_LENGTH: number = PAIR_EVENT_NODE_SETTINGS.STRAIGHT_TRACK_LENGTH;
+const MAX_TRACK_LENGTH: number = PAIR_EVENT_NODE_SETTINGS.MAX_TRACK_LENGTH;
+const TRACK_STEP: number = PAIR_EVENT_NODE_SETTINGS.TRACK_STEP;
+const PHOTON_WIGGLE_PX: number = PAIR_EVENT_NODE_SETTINGS.PHOTON_WIGGLE_PX;
 
 /**
  * A track leaving the vertex at `angle` (radians, counter-clockwise on screen being
@@ -68,16 +69,19 @@ export class PairEventNode extends Node {
     const frame = new Rectangle(0, 0, EVENT_WIDTH, EVENT_HEIGHT, {
       fill: PhotonInteractionsColors.chartBackgroundColorProperty,
       stroke: PhotonInteractionsColors.panelBorderColorProperty,
-      cornerRadius: 6,
+      cornerRadius: PAIR_EVENT_NODE_SETTINGS.FRAME_CORNER_RADIUS,
     });
     const title = new Text(strings.eventTitleStringProperty, {
       font: FONTS.CHART_TITLE,
       fill: PhotonInteractionsColors.textColorProperty,
-      maxWidth: 90,
-      left: 10,
-      top: 8,
+      maxWidth: PAIR_EVENT_NODE_SETTINGS.TITLE_MAX_WIDTH,
+      left: PAIR_EVENT_NODE_SETTINGS.TITLE_LEFT,
+      top: PAIR_EVENT_NODE_SETTINGS.TITLE_TOP,
     });
-    const statusText = new Text("", { font: FONTS.CHART_TITLE, maxWidth: EVENT_WIDTH - 120 });
+    const statusText = new Text("", {
+      font: FONTS.CHART_TITLE,
+      maxWidth: EVENT_WIDTH - PAIR_EVENT_NODE_SETTINGS.STATUS_TEXT_MAX_WIDTH_OFFSET,
+    });
     const statusStrings: Record<PairStatus, TReadOnlyProperty<string>> = {
       below: strings.status.belowStringProperty,
       allowed: strings.status.allowedStringProperty,
@@ -96,12 +100,15 @@ export class PairEventNode extends Node {
           status === "allowed"
             ? PhotonInteractionsColors.restEnergyColorProperty
             : PhotonInteractionsColors.limitColorProperty;
-        statusText.right = EVENT_WIDTH - 10;
-        statusText.top = 8;
+        statusText.right = EVENT_WIDTH - PAIR_EVENT_NODE_SETTINGS.CONSTRUCTOR_RIGHT_OFFSET;
+        statusText.top = PAIR_EVENT_NODE_SETTINGS.TOP_TOP;
       },
     );
 
-    const nucleus = new Circle(9, { fill: PhotonInteractionsColors.nucleusColorProperty, center: VERTEX });
+    const nucleus = new Circle(PAIR_EVENT_NODE_SETTINGS.NUCLEUS_RADIUS, {
+      fill: PhotonInteractionsColors.nucleusColorProperty,
+      center: VERTEX,
+    });
     const nucleusLabel = new Text("", {
       font: FONTS.PARTICLE_LABEL,
       fill: PhotonInteractionsColors.nucleusColorProperty,
@@ -111,24 +118,24 @@ export class PairEventNode extends Node {
       nucleusLabel.visible = nucleus.visible;
       nucleusLabel.string = surroundings === "lead" ? "Pb" : "C";
       nucleusLabel.right = VERTEX.x - 13;
-      nucleusLabel.top = VERTEX.y + 5;
+      nucleusLabel.top = VERTEX.y + PAIR_EVENT_NODE_SETTINGS.CONSTRUCTOR_TOP_OFFSET;
     });
 
     const fieldLabel = new Text(strings.fieldLabelStringProperty, {
       font: FONTS.TICK_LABEL,
       fill: PhotonInteractionsColors.secondaryTextColorProperty,
-      maxWidth: 160,
+      maxWidth: PAIR_EVENT_NODE_SETTINGS.FIELD_LABEL_MAX_WIDTH,
       visibleProperty: model.fieldOnProperty,
     });
     const fieldSymbol = new Text("⊙", {
       font: FONTS.BIG_LABEL,
       fill: PhotonInteractionsColors.secondaryTextColorProperty,
       visibleProperty: model.fieldOnProperty,
-      left: 10,
-      bottom: EVENT_HEIGHT - 8,
+      left: PAIR_EVENT_NODE_SETTINGS.FIELD_SYMBOL_LEFT,
+      bottom: EVENT_HEIGHT - PAIR_EVENT_NODE_SETTINGS.FIELD_SYMBOL_BOTTOM_OFFSET,
     });
     const placeFieldLabel = (): void => {
-      fieldLabel.left = fieldSymbol.right + 5;
+      fieldLabel.left = fieldSymbol.right + PAIR_EVENT_NODE_SETTINGS.PLACE_FIELD_LABEL_LEFT_OFFSET;
       fieldLabel.centerY = fieldSymbol.centerY;
     };
     fieldLabel.localBoundsProperty.lazyLink(placeFieldLabel);
@@ -136,10 +143,10 @@ export class PairEventNode extends Node {
 
     const photon = new PhotonArrowNode(PhotonInteractionsColors.photonColorProperty);
     const photonLabel = new Text("γ", { font: FONTS.BIG_LABEL, fill: PhotonInteractionsColors.photonColorProperty });
-    photonLabel.centerX = 40;
-    photonLabel.bottom = VERTEX.y - 12;
+    photonLabel.centerX = PAIR_EVENT_NODE_SETTINGS.CENTER_X_CENTER_X;
+    photonLabel.bottom = VERTEX.y - PAIR_EVENT_NODE_SETTINGS.CONSTRUCTOR_BOTTOM_OFFSET;
     const track = (stroke: typeof PhotonInteractionsColors.electronColorProperty): Path =>
-      new Path(null, { stroke, lineWidth: 2.5, lineCap: "round" });
+      new Path(null, { stroke, lineWidth: PAIR_EVENT_NODE_SETTINGS.TRACK_LINE_WIDTH, lineCap: "round" });
     const electronTrack = track(PhotonInteractionsColors.electronColorProperty);
     const positronTrack = track(PhotonInteractionsColors.positronColorProperty);
     const particleLabel = (text: string, fill: typeof PhotonInteractionsColors.electronColorProperty): Text =>
@@ -207,6 +214,13 @@ export class PairEventNode extends Node {
       title,
       statusText,
     ];
-    this.clipArea = Shape.roundRect(0, 0, EVENT_WIDTH, EVENT_HEIGHT, 6, 6);
+    this.clipArea = Shape.roundRect(
+      0,
+      0,
+      EVENT_WIDTH,
+      EVENT_HEIGHT,
+      PAIR_EVENT_NODE_SETTINGS.CLIP_AREA_CORNER_X,
+      PAIR_EVENT_NODE_SETTINGS.CLIP_AREA_CORNER_Y,
+    );
   }
 }

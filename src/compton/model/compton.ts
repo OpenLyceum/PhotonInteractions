@@ -1,3 +1,4 @@
+import { COMPTON_NUMERICS } from "../../PhotonInteractionsConstants.js";
 /**
  * compton.ts
  *
@@ -89,7 +90,7 @@ export const kleinNishinaRecoilSpectrum = (energy: number, kinetic: number): num
  * @param random - a source of uniform numbers on [0, 1), passed in so tests can seed it
  */
 export const sampleScatteringAngle = (energy: number, random: () => number): number => {
-  for (let attempt = 0; attempt < 1000; attempt++) {
+  for (let attempt = 0; attempt < COMPTON_NUMERICS.MAX_REJECTION_ATTEMPTS; attempt++) {
     const theta = Math.acos(2 * random() - 1);
     if (random() < kleinNishina(energy, theta)) {
       return theta;
@@ -130,7 +131,10 @@ export const spectrometerIntensity = (
 ): number => {
   const sigma = COMPTON.SPECTROMETER_SIGMA_PM;
   const fraction = includeBound ? shiftedFraction(wavelengthPm, theta) : 1;
-  return (1 - fraction) * gaussian(shiftPm, sigma) + fraction * gaussian(shiftPm - comptonShift(theta), 1.5 * sigma);
+  return (
+    (1 - fraction) * gaussian(shiftPm, sigma) +
+    fraction * gaussian(shiftPm - comptonShift(theta), COMPTON_NUMERICS.SCATTERED_LINE_WIDTH_FACTOR * sigma)
+  );
 };
 
 /**
@@ -149,7 +153,7 @@ export const detectorSpectrumFractions = (
   photopeakFraction: number,
   resolution: number,
 ): number[] => {
-  const perBin = 20;
+  const perBin: number = COMPTON_NUMERICS.CONTINUUM_SAMPLES_PER_BIN;
   const n = bins * perBin;
   const step = (rangeFactor * energy) / n;
   const ideal = new Array<number>(n).fill(0);
@@ -168,8 +172,8 @@ export const detectorSpectrumFractions = (
   ideal[peakIndex] = (ideal[peakIndex] ?? 0) + photopeakFraction;
 
   // Blur with the detector resolution.
-  const sigma = Math.max(1e-9, (resolution * energy) / step);
-  const reach = Math.ceil(4 * sigma);
+  const sigma = Math.max(COMPTON_NUMERICS.MIN_SIGMA_BINS, (resolution * energy) / step);
+  const reach = Math.ceil(COMPTON_NUMERICS.BROADENING_SIGMA_REACH * sigma);
   const kernel: number[] = [];
   let kernelSum = 0;
   for (let k = -reach; k <= reach; k++) {

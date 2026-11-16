@@ -1,3 +1,4 @@
+import { PAIR_BUDGET_NODE_SETTINGS } from "../../PhotonInteractionsConstants.js";
 /**
  * PairBudgetNode.ts
  *
@@ -22,16 +23,16 @@ import { FONTS } from "../../PhotonInteractionsConstants.js";
 import type { PairProductionModel } from "../model/PairProductionModel.js";
 import { PAIR_REST_ENERGY_KEV } from "../model/pairProduction.js";
 
-const BUDGET_WIDTH = 420;
-const BUDGET_HEIGHT = 246;
+const BUDGET_WIDTH: number = PAIR_BUDGET_NODE_SETTINGS.BUDGET_WIDTH;
+const BUDGET_HEIGHT: number = PAIR_BUDGET_NODE_SETTINGS.BUDGET_HEIGHT;
 
-const BAR_LEFT = 104;
-const BAR_WIDTH = 258;
-const BAR_HEIGHT = 16;
+const BAR_LEFT: number = PAIR_BUDGET_NODE_SETTINGS.BAR_LEFT;
+const BAR_WIDTH: number = PAIR_BUDGET_NODE_SETTINGS.BAR_WIDTH;
+const BAR_HEIGHT: number = PAIR_BUDGET_NODE_SETTINGS.BAR_HEIGHT;
 /** The bars are scaled so this much energy (keV) fills the width, until the photon needs more room. */
-const MINIMUM_FULL_SCALE_KEV = 4000;
+const MINIMUM_FULL_SCALE_KEV: number = PAIR_BUDGET_NODE_SETTINGS.MINIMUM_FULL_SCALE_KEV;
 /** A gap narrower than this is drawn this wide, so the momentum shortfall never vanishes from view. */
-const MINIMUM_GAP_PX = 2;
+const MINIMUM_GAP_PX: number = PAIR_BUDGET_NODE_SETTINGS.MINIMUM_GAP_PX;
 
 type Paint = typeof PhotonInteractionsColors.textColorProperty;
 
@@ -43,24 +44,24 @@ export class PairBudgetNode extends Node {
     const frame = new Rectangle(0, 0, BUDGET_WIDTH, BUDGET_HEIGHT, {
       fill: PhotonInteractionsColors.chartBackgroundColorProperty,
       stroke: PhotonInteractionsColors.panelBorderColorProperty,
-      cornerRadius: 6,
+      cornerRadius: PAIR_BUDGET_NODE_SETTINGS.FRAME_CORNER_RADIUS,
     });
     const heading = (textProperty: TReadOnlyProperty<string>, top: number): Text =>
       new Text(textProperty, {
         font: FONTS.CHART_TITLE,
         fill: PhotonInteractionsColors.textColorProperty,
-        maxWidth: BUDGET_WIDTH - 20,
-        left: 10,
+        maxWidth: BUDGET_WIDTH - PAIR_BUDGET_NODE_SETTINGS.HEADING_MAX_WIDTH_OFFSET,
+        left: PAIR_BUDGET_NODE_SETTINGS.HEADING_LEFT,
         top,
       });
     const rowLabel = (textProperty: TReadOnlyProperty<string>, centerY: number): Text => {
       const text = new Text(textProperty, {
         font: FONTS.TICK_LABEL,
         fill: PhotonInteractionsColors.secondaryTextColorProperty,
-        maxWidth: BAR_LEFT - 16,
+        maxWidth: BAR_LEFT - PAIR_BUDGET_NODE_SETTINGS.TEXT_MAX_WIDTH_OFFSET,
       });
       const place = (): void => {
-        text.right = BAR_LEFT - 6;
+        text.right = BAR_LEFT - PAIR_BUDGET_NODE_SETTINGS.PLACE_RIGHT_OFFSET;
         text.centerY = centerY;
       };
       text.localBoundsProperty.lazyLink(place);
@@ -71,20 +72,26 @@ export class PairBudgetNode extends Node {
       new Rectangle(BAR_LEFT, centerY - BAR_HEIGHT / 2, 0, BAR_HEIGHT, { fill });
     const legendItem = (textProperty: TReadOnlyProperty<string>, fill: Paint): Node =>
       new HBox({
-        spacing: 4,
+        spacing: PAIR_BUDGET_NODE_SETTINGS.LEGEND_ITEM_SPACING,
         children: [
-          new Rectangle(0, 0, 9, 9, { fill }),
+          new Rectangle(
+            0,
+            0,
+            PAIR_BUDGET_NODE_SETTINGS.LEGEND_ITEM_WIDTH,
+            PAIR_BUDGET_NODE_SETTINGS.LEGEND_ITEM_HEIGHT,
+            { fill },
+          ),
           new Text(textProperty, {
             font: FONTS.TICK_LABEL,
             fill: PhotonInteractionsColors.textColorProperty,
-            maxWidth: 104,
+            maxWidth: PAIR_BUDGET_NODE_SETTINGS.LEGEND_ITEM_MAX_WIDTH,
           }),
         ],
       });
 
     // ── Energy ──────────────────────────────────────────────────────────────────
-    const ENERGY_PHOTON_Y = 40;
-    const ENERGY_PAIR_Y = 64;
+    const ENERGY_PHOTON_Y: number = PAIR_BUDGET_NODE_SETTINGS.ENERGY_PHOTON_Y;
+    const ENERGY_PAIR_Y: number = PAIR_BUDGET_NODE_SETTINGS.ENERGY_PAIR_Y;
     const photonEnergyBar = bar(PhotonInteractionsColors.photonColorProperty, ENERGY_PHOTON_Y);
     const restBar = bar(PhotonInteractionsColors.restEnergyColorProperty, ENERGY_PAIR_Y);
     const electronBar = bar(PhotonInteractionsColors.electronColorProperty, ENERGY_PAIR_Y);
@@ -92,30 +99,33 @@ export class PairBudgetNode extends Node {
     // Outline of the 2mₑc² the pair needs, shown when the photon cannot pay for it.
     const restNeeded = new Rectangle(BAR_LEFT, ENERGY_PAIR_Y - BAR_HEIGHT / 2, 0, BAR_HEIGHT, {
       stroke: PhotonInteractionsColors.restEnergyColorProperty,
-      lineDash: [4, 3],
+      lineDash: [
+        PAIR_BUDGET_NODE_SETTINGS.REST_NEEDED_LINE_DASH_DASH,
+        PAIR_BUDGET_NODE_SETTINGS.CONSTRUCTOR_REST_NEEDED_LINE_DASH_DASH,
+      ],
     });
     const restNeededLabel = new Text(strings.restEnergyNeededStringProperty, {
       font: FONTS.TICK_LABEL,
       fill: PhotonInteractionsColors.limitColorProperty,
-      maxWidth: 150,
+      maxWidth: PAIR_BUDGET_NODE_SETTINGS.REST_NEEDED_LABEL_MAX_WIDTH,
     });
     const photonEnergyValue = new Text("", {
       font: FONTS.TICK_LABEL,
       fill: PhotonInteractionsColors.photonColorProperty,
     });
     const energyLegend = new HBox({
-      spacing: 12,
+      spacing: PAIR_BUDGET_NODE_SETTINGS.ENERGY_LEGEND_SPACING,
       children: [
         legendItem(strings.restEnergyStringProperty, PhotonInteractionsColors.restEnergyColorProperty),
         legendItem(strings.electronKineticStringProperty, PhotonInteractionsColors.electronColorProperty),
         legendItem(strings.positronKineticStringProperty, PhotonInteractionsColors.positronColorProperty),
       ],
-      left: 14,
-      top: ENERGY_PAIR_Y + 16,
+      left: PAIR_BUDGET_NODE_SETTINGS.ENERGY_LEGEND_LEFT,
+      top: ENERGY_PAIR_Y + PAIR_BUDGET_NODE_SETTINGS.ENERGY_LEGEND_TOP_OFFSET,
     });
 
     // ── Momentum ────────────────────────────────────────────────────────────────
-    const MOMENTUM_TOP = 124;
+    const MOMENTUM_TOP: number = PAIR_BUDGET_NODE_SETTINGS.MOMENTUM_TOP;
     const MOMENTUM_PHOTON_Y = MOMENTUM_TOP + 32;
     const MOMENTUM_PAIR_Y = MOMENTUM_TOP + 56;
     const photonMomentumBar = bar(PhotonInteractionsColors.photonColorProperty, MOMENTUM_PHOTON_Y);
@@ -125,7 +135,11 @@ export class PairBudgetNode extends Node {
       font: FONTS.TICK_LABEL,
       fill: PhotonInteractionsColors.photonColorProperty,
     });
-    const caption = new Text("", { font: FONTS.READOUT, maxWidth: BUDGET_WIDTH - 28, left: 14 });
+    const caption = new Text("", {
+      font: FONTS.READOUT,
+      maxWidth: BUDGET_WIDTH - PAIR_BUDGET_NODE_SETTINGS.CAPTION_MAX_WIDTH_OFFSET,
+      left: PAIR_BUDGET_NODE_SETTINGS.CAPTION_LEFT,
+    });
 
     Multilink.multilink(
       [
@@ -145,11 +159,11 @@ export class PairBudgetNode extends Node {
         const photonWidth = energy * scale;
         photonEnergyBar.rectWidth = photonWidth;
         photonMomentumBar.rectWidth = photonWidth;
-        photonEnergyValue.string = formatEnergy(energy, 4);
-        photonEnergyValue.left = BAR_LEFT + photonWidth + 5;
+        photonEnergyValue.string = formatEnergy(energy, PAIR_BUDGET_NODE_SETTINGS.PHOTON_ENERGY_VALUE_DIGITS);
+        photonEnergyValue.left = BAR_LEFT + photonWidth + PAIR_BUDGET_NODE_SETTINGS.CONSTRUCTOR_LEFT_OFFSET;
         photonEnergyValue.centerY = ENERGY_PHOTON_Y;
-        photonMomentumValue.string = formatEnergy(energy, 4, "/c");
-        photonMomentumValue.left = BAR_LEFT + photonWidth + 5;
+        photonMomentumValue.string = formatEnergy(energy, PAIR_BUDGET_NODE_SETTINGS.PHOTON_MOMENTUM_VALUE_DIGITS, "/c");
+        photonMomentumValue.left = BAR_LEFT + photonWidth + PAIR_BUDGET_NODE_SETTINGS.CONSTRUCTOR_LEFT_OFFSET;
         photonMomentumValue.centerY = MOMENTUM_PHOTON_Y;
 
         // Energy: enough for the rest energy or not.
@@ -190,14 +204,14 @@ export class PairBudgetNode extends Node {
         caption.string = enough
           ? StringUtils.fillIn(pattern, {
               message: status === "allowed" ? nucleusTakes : nothingTakes,
-              shortfall: formatEnergy(shortfall, 3, "/c"),
+              shortfall: formatEnergy(shortfall, PAIR_BUDGET_NODE_SETTINGS.CAPTION_DIGITS, "/c"),
             })
           : below;
         caption.fill =
           status === "allowed"
             ? PhotonInteractionsColors.nucleusColorProperty
             : PhotonInteractionsColors.limitColorProperty;
-        caption.top = MOMENTUM_PAIR_Y + 18;
+        caption.top = MOMENTUM_PAIR_Y + PAIR_BUDGET_NODE_SETTINGS.CONSTRUCTOR_TOP_OFFSET;
       },
     );
 

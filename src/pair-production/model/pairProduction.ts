@@ -1,3 +1,4 @@
+import { PAIR_NUMERICS } from "../../PhotonInteractionsConstants.js";
 /**
  * pairProduction.ts
  *
@@ -65,7 +66,7 @@ export const pairEvent = (energy: number, share: number, nucleusRestEnergy: numb
   let event: PairEvent | null = null;
   // Fixed-point iteration on the nucleus's kinetic energy; it converges in two or three rounds
   // because that energy is a millionth of the rest.
-  for (let i = 0; i < 6; i++) {
+  for (let i = 0; i < PAIR_NUMERICS.RECOIL_ITERATIONS; i++) {
     const available = Math.max(0, energy - PAIR_REST_ENERGY_KEV - nucleusKinetic);
     const electronKinetic = share * available;
     const positronKinetic = available - electronKinetic;

@@ -1,3 +1,4 @@
+import { ANNIHILATION_SCREEN_SUMMARY_CONTENT_SETTINGS } from "../../PhotonInteractionsConstants.js";
 /**
  * AnnihilationScreenSummaryContent.ts
  *
@@ -25,10 +26,13 @@ export class AnnihilationScreenSummaryContent extends ScreenSummaryContent {
       ],
       (kinetic, [first, second], opening, pattern) =>
         StringUtils.fillIn(pattern, {
-          kinetic: formatEnergy(kinetic, 3),
-          energy1: formatEnergy(first.energy, 3),
+          kinetic: formatEnergy(kinetic, ANNIHILATION_SCREEN_SUMMARY_CONTENT_SETTINGS.CURRENT_DETAILS_PROPERTY_DIGITS),
+          energy1: formatEnergy(first.energy, ANNIHILATION_SCREEN_SUMMARY_CONTENT_SETTINGS.ENERGY_FORMAT_ENERGY_DIGITS),
           angle1: formatDegrees(first.angle, 0),
-          energy2: formatEnergy(second.energy, 3),
+          energy2: formatEnergy(
+            second.energy,
+            ANNIHILATION_SCREEN_SUMMARY_CONTENT_SETTINGS.ENERGY_FORMAT_ENERGY_DIGITS,
+          ),
           angle2: formatDegrees(second.angle, 0),
           opening: formatDegrees(opening, 0),
         }),

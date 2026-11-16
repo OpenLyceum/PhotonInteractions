@@ -1,3 +1,4 @@
+import { COMPTON_SCREEN_SUMMARY_CONTENT_SETTINGS } from "../../PhotonInteractionsConstants.js";
 /**
  * ComptonScreenSummaryContent.ts
  *
@@ -27,14 +28,32 @@ export class ComptonScreenSummaryContent extends ScreenSummaryContent {
       ],
       () =>
         StringUtils.fillIn(a11y.currentDetailsPatternStringProperty.value, {
-          energy: formatEnergy(model.energyProperty.value, 3),
-          wavelength: formatWavelength(model.wavelengthProperty.value, 4),
+          energy: formatEnergy(
+            model.energyProperty.value,
+            COMPTON_SCREEN_SUMMARY_CONTENT_SETTINGS.VALUE_FORMAT_ENERGY_DIGITS,
+          ),
+          wavelength: formatWavelength(
+            model.wavelengthProperty.value,
+            COMPTON_SCREEN_SUMMARY_CONTENT_SETTINGS.VALUE_FORMAT_WAVELENGTH_DIGITS,
+          ),
           angle: formatDegrees(model.thetaProperty.value, 0),
-          shift: formatWavelength(model.shiftProperty.value, 3),
-          scatteredWavelength: formatWavelength(model.scatteredWavelengthProperty.value, 4),
-          scatteredEnergy: formatEnergy(model.scatteredEnergyProperty.value, 3),
+          shift: formatWavelength(
+            model.shiftProperty.value,
+            COMPTON_SCREEN_SUMMARY_CONTENT_SETTINGS.VALUE_FORMAT_WAVELENGTH_DIGITS_SEGMENT_2,
+          ),
+          scatteredWavelength: formatWavelength(
+            model.scatteredWavelengthProperty.value,
+            COMPTON_SCREEN_SUMMARY_CONTENT_SETTINGS.VALUE_FORMAT_WAVELENGTH_DIGITS,
+          ),
+          scatteredEnergy: formatEnergy(
+            model.scatteredEnergyProperty.value,
+            COMPTON_SCREEN_SUMMARY_CONTENT_SETTINGS.VALUE_FORMAT_ENERGY_DIGITS,
+          ),
           recoilAngle: formatDegrees(model.recoilAngleProperty.value, 0),
-          kinetic: formatEnergy(model.recoilKineticProperty.value, 3),
+          kinetic: formatEnergy(
+            model.recoilKineticProperty.value,
+            COMPTON_SCREEN_SUMMARY_CONTENT_SETTINGS.VALUE_FORMAT_ENERGY_DIGITS,
+          ),
         }),
     );
 

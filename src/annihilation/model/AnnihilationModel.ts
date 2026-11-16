@@ -137,7 +137,7 @@ export class AnnihilationModel implements TModel {
       return;
     }
     // Cap dt so a tab returning from the background does not record hundreds at once.
-    this.pendingEvents += ANNIHILATION.EVENT_RATE_PER_S * Math.min(dt, 0.1);
+    this.pendingEvents += ANNIHILATION.EVENT_RATE_PER_S * Math.min(dt, ANNIHILATION.MAX_FRAME_DT);
     const count = Math.floor(this.pendingEvents);
     if (count > 0) {
       this.pendingEvents -= count;

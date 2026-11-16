@@ -1,3 +1,4 @@
+import { PAIR_PRODUCTION_SCREEN_SUMMARY_CONTENT_SETTINGS } from "../../PhotonInteractionsConstants.js";
 /**
  * PairProductionScreenSummaryContent.ts
  *
@@ -43,16 +44,32 @@ export class PairProductionScreenSummaryContent extends ScreenSummaryContent {
       () => {
         const event = model.eventProperty.value;
         const summary = StringUtils.fillIn(a11y.currentDetailsPatternStringProperty.value, {
-          energy: formatEnergy(model.energyProperty.value, 3),
+          energy: formatEnergy(
+            model.energyProperty.value,
+            PAIR_PRODUCTION_SCREEN_SUMMARY_CONTENT_SETTINGS.VALUE_FORMAT_ENERGY_DIGITS,
+          ),
           surroundings: surroundingsNames[model.surroundingsProperty.value].value.toLowerCase(),
           status: statusNames[model.statusProperty.value].value,
         });
         return event
           ? `${summary} ${StringUtils.fillIn(a11y.productsPatternStringProperty.value, {
-              electronKinetic: formatEnergy(event.electronKinetic, 3),
-              positronKinetic: formatEnergy(event.positronKinetic, 3),
-              nucleusMomentum: formatEnergy(event.nucleusMomentum, 3, "/c"),
-              nucleusKinetic: formatEnergy(event.nucleusKinetic, 3),
+              electronKinetic: formatEnergy(
+                event.electronKinetic,
+                PAIR_PRODUCTION_SCREEN_SUMMARY_CONTENT_SETTINGS.ELECTRON_KINETIC_FORMAT_ENERGY_DIGITS,
+              ),
+              positronKinetic: formatEnergy(
+                event.positronKinetic,
+                PAIR_PRODUCTION_SCREEN_SUMMARY_CONTENT_SETTINGS.POSITRON_KINETIC_FORMAT_ENERGY_DIGITS,
+              ),
+              nucleusMomentum: formatEnergy(
+                event.nucleusMomentum,
+                PAIR_PRODUCTION_SCREEN_SUMMARY_CONTENT_SETTINGS.NUCLEUS_MOMENTUM_FORMAT_ENERGY_DIGITS,
+                "/c",
+              ),
+              nucleusKinetic: formatEnergy(
+                event.nucleusKinetic,
+                PAIR_PRODUCTION_SCREEN_SUMMARY_CONTENT_SETTINGS.NUCLEUS_KINETIC_FORMAT_ENERGY_DIGITS,
+              ),
             })}`
           : summary;
       },

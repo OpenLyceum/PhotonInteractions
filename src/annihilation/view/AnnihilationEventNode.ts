@@ -1,3 +1,4 @@
+import { ANNIHILATION_EVENT_NODE_SETTINGS } from "../../PhotonInteractionsConstants.js";
 /**
  * AnnihilationEventNode.ts
  *
@@ -24,19 +25,19 @@ import PhotonInteractionsColors from "../../PhotonInteractionsColors.js";
 import { ANNIHILATION, FONTS, PHYSICS } from "../../PhotonInteractionsConstants.js";
 import type { AnnihilationModel } from "../model/AnnihilationModel.js";
 
-const EVENT_WIDTH = 420;
-const EVENT_HEIGHT = 300;
+const EVENT_WIDTH: number = ANNIHILATION_EVENT_NODE_SETTINGS.EVENT_WIDTH;
+const EVENT_HEIGHT: number = ANNIHILATION_EVENT_NODE_SETTINGS.EVENT_HEIGHT;
 
-const VERTEX = new Vector2(190, 128);
-const PHOTON_MIN_LENGTH = 26;
-const PHOTON_LENGTH_RANGE = 110;
+const VERTEX = new Vector2(ANNIHILATION_EVENT_NODE_SETTINGS.VERTEX_X, ANNIHILATION_EVENT_NODE_SETTINGS.VERTEX_Y);
+const PHOTON_MIN_LENGTH: number = ANNIHILATION_EVENT_NODE_SETTINGS.PHOTON_MIN_LENGTH;
+const PHOTON_LENGTH_RANGE: number = ANNIHILATION_EVENT_NODE_SETTINGS.PHOTON_LENGTH_RANGE;
 /** Drawn wiggle of a 511 keV photon, px; others scale with wavelength. */
-const REST_WIGGLE_PX = 13;
-const POSITRON_MIN_LENGTH = 34;
-const POSITRON_LENGTH_RANGE = 110;
-const BAR_LEFT = 150;
-const BAR_WIDTH = 250;
-const BAR_HEIGHT = 12;
+const REST_WIGGLE_PX: number = ANNIHILATION_EVENT_NODE_SETTINGS.REST_WIGGLE_PX;
+const POSITRON_MIN_LENGTH: number = ANNIHILATION_EVENT_NODE_SETTINGS.POSITRON_MIN_LENGTH;
+const POSITRON_LENGTH_RANGE: number = ANNIHILATION_EVENT_NODE_SETTINGS.POSITRON_LENGTH_RANGE;
+const BAR_LEFT: number = ANNIHILATION_EVENT_NODE_SETTINGS.BAR_LEFT;
+const BAR_WIDTH: number = ANNIHILATION_EVENT_NODE_SETTINGS.BAR_WIDTH;
+const BAR_HEIGHT: number = ANNIHILATION_EVENT_NODE_SETTINGS.BAR_HEIGHT;
 
 export class AnnihilationEventNode extends Node {
   public constructor(model: AnnihilationModel) {
@@ -46,28 +47,35 @@ export class AnnihilationEventNode extends Node {
     const frame = new Rectangle(0, 0, EVENT_WIDTH, EVENT_HEIGHT, {
       fill: PhotonInteractionsColors.chartBackgroundColorProperty,
       stroke: PhotonInteractionsColors.panelBorderColorProperty,
-      cornerRadius: 6,
+      cornerRadius: ANNIHILATION_EVENT_NODE_SETTINGS.FRAME_CORNER_RADIUS,
     });
     const title = new Text(strings.eventTitleStringProperty, {
       font: FONTS.CHART_TITLE,
       fill: PhotonInteractionsColors.textColorProperty,
-      maxWidth: EVENT_WIDTH - 20,
-      left: 10,
-      top: 8,
+      maxWidth: EVENT_WIDTH - ANNIHILATION_EVENT_NODE_SETTINGS.TITLE_MAX_WIDTH_OFFSET,
+      left: ANNIHILATION_EVENT_NODE_SETTINGS.TITLE_LEFT,
+      top: ANNIHILATION_EVENT_NODE_SETTINGS.TITLE_TOP,
     });
-    const axis = new Line(12, VERTEX.y, EVENT_WIDTH - 12, VERTEX.y, {
+    const axis = new Line(ANNIHILATION_EVENT_NODE_SETTINGS.AXIS_START_X, VERTEX.y, EVENT_WIDTH - 12, VERTEX.y, {
       stroke: PhotonInteractionsColors.secondaryTextColorProperty,
-      lineDash: [4, 4],
+      lineDash: [
+        ANNIHILATION_EVENT_NODE_SETTINGS.AXIS_LINE_DASH_DASH,
+        ANNIHILATION_EVENT_NODE_SETTINGS.AXIS_LINE_DASH_DASH,
+      ],
     });
 
-    const electron = new Circle(7, { fill: PhotonInteractionsColors.electronColorProperty });
-    const positron = new Circle(7, { fill: PhotonInteractionsColors.positronColorProperty });
+    const electron = new Circle(ANNIHILATION_EVENT_NODE_SETTINGS.ELECTRON_RADIUS, {
+      fill: PhotonInteractionsColors.electronColorProperty,
+    });
+    const positron = new Circle(ANNIHILATION_EVENT_NODE_SETTINGS.POSITRON_RADIUS, {
+      fill: PhotonInteractionsColors.positronColorProperty,
+    });
     const positronArrow = new ArrowNode(0, 0, 1, 0, {
       fill: PhotonInteractionsColors.positronColorProperty,
       stroke: null,
-      tailWidth: 3,
-      headWidth: 10,
-      headHeight: 11,
+      tailWidth: ANNIHILATION_EVENT_NODE_SETTINGS.POSITRON_ARROW_TAIL_WIDTH,
+      headWidth: ANNIHILATION_EVENT_NODE_SETTINGS.POSITRON_ARROW_HEAD_WIDTH,
+      headHeight: ANNIHILATION_EVENT_NODE_SETTINGS.POSITRON_ARROW_HEAD_HEIGHT,
     });
     const label = (text: string, fill: typeof PhotonInteractionsColors.textColorProperty): Text =>
       new Text(text, { font: FONTS.BIG_LABEL, fill });
@@ -82,16 +90,16 @@ export class AnnihilationEventNode extends Node {
     const singleLabel = label("γ ?", PhotonInteractionsColors.limitColorProperty);
 
     // ── Single-photon momentum check ────────────────────────────────────────────
-    const NEEDS_Y = 232;
-    const HAS_Y = 254;
+    const NEEDS_Y: number = ANNIHILATION_EVENT_NODE_SETTINGS.NEEDS_Y;
+    const HAS_Y: number = ANNIHILATION_EVENT_NODE_SETTINGS.HAS_Y;
     const rowLabel = (textProperty: typeof strings.onePhotonNeedsStringProperty, centerY: number): Text => {
       const text = new Text(textProperty, {
         font: FONTS.TICK_LABEL,
         fill: PhotonInteractionsColors.secondaryTextColorProperty,
-        maxWidth: BAR_LEFT - 18,
+        maxWidth: BAR_LEFT - ANNIHILATION_EVENT_NODE_SETTINGS.TEXT_MAX_WIDTH_OFFSET,
       });
       const place = (): void => {
-        text.right = BAR_LEFT - 6;
+        text.right = BAR_LEFT - ANNIHILATION_EVENT_NODE_SETTINGS.PLACE_RIGHT_OFFSET;
         text.centerY = centerY;
       };
       text.localBoundsProperty.lazyLink(place);
@@ -109,17 +117,17 @@ export class AnnihilationEventNode extends Node {
     const verdict = new Text("", {
       font: FONTS.READOUT_VALUE,
       fill: PhotonInteractionsColors.limitColorProperty,
-      maxWidth: EVENT_WIDTH - 28,
-      left: 14,
+      maxWidth: EVENT_WIDTH - ANNIHILATION_EVENT_NODE_SETTINGS.VERDICT_MAX_WIDTH_OFFSET,
+      left: ANNIHILATION_EVENT_NODE_SETTINGS.VERDICT_LEFT,
     });
     const onePhotonLayer = new Node({
       children: [
         new Text(strings.onePhotonTitleStringProperty, {
           font: FONTS.CHART_TITLE,
           fill: PhotonInteractionsColors.textColorProperty,
-          maxWidth: EVENT_WIDTH - 20,
-          left: 10,
-          top: 202,
+          maxWidth: EVENT_WIDTH - ANNIHILATION_EVENT_NODE_SETTINGS.ONE_PHOTON_LAYER_MAX_WIDTH_OFFSET,
+          left: ANNIHILATION_EVENT_NODE_SETTINGS.ONE_PHOTON_LAYER_LEFT,
+          top: ANNIHILATION_EVENT_NODE_SETTINGS.ONE_PHOTON_LAYER_TOP,
         }),
         rowLabel(strings.onePhotonNeedsStringProperty, NEEDS_Y),
         rowLabel(strings.onePhotonHasStringProperty, HAS_Y),
@@ -148,19 +156,19 @@ export class AnnihilationEventNode extends Node {
         const atRest = kinetic === 0;
         positronArrow.visible = !atRest;
         positron.visible = atRest;
-        electron.center = atRest ? VERTEX.plusXY(8, 0) : VERTEX;
-        positron.center = VERTEX.plusXY(-8, 0);
-        electronLabel.right = electron.centerX - 4;
-        electronLabel.top = VERTEX.y + 12;
+        electron.center = atRest ? VERTEX.plusXY(ANNIHILATION_EVENT_NODE_SETTINGS.ELECTRON_X_OFFSET, 0) : VERTEX;
+        positron.center = VERTEX.plusXY(ANNIHILATION_EVENT_NODE_SETTINGS.POSITRON_X_OFFSET, 0);
+        electronLabel.right = electron.centerX - ANNIHILATION_EVENT_NODE_SETTINGS.CONSTRUCTOR_RIGHT_OFFSET;
+        electronLabel.top = VERTEX.y + ANNIHILATION_EVENT_NODE_SETTINGS.CONSTRUCTOR_TOP_OFFSET;
         if (atRest) {
-          positronLabel.centerX = positron.centerX - 6;
-          positronLabel.bottom = VERTEX.y - 10;
+          positronLabel.centerX = positron.centerX - ANNIHILATION_EVENT_NODE_SETTINGS.CONSTRUCTOR_CENTER_X_OFFSET;
+          positronLabel.bottom = VERTEX.y - ANNIHILATION_EVENT_NODE_SETTINGS.CONSTRUCTOR_BOTTOM_OFFSET;
         } else {
           const length =
             POSITRON_MIN_LENGTH + (POSITRON_LENGTH_RANGE * kinetic) / (1000 * ANNIHILATION.KINETIC_MAX_MEV);
           positronArrow.setTailAndTip(VERTEX.x - 12 - length, VERTEX.y, VERTEX.x - 12, VERTEX.y);
           positronLabel.centerX = VERTEX.x - 12 - length / 2;
-          positronLabel.bottom = VERTEX.y - 10;
+          positronLabel.bottom = VERTEX.y - ANNIHILATION_EVENT_NODE_SETTINGS.CONSTRUCTOR_BOTTOM_OFFSET;
         }
 
         const drawPhoton = (
@@ -191,13 +199,19 @@ export class AnnihilationEventNode extends Node {
             BAR_WIDTH / (1.05 * (1000 * ANNIHILATION.KINETIC_MAX_MEV + 2 * PHYSICS.ELECTRON_REST_ENERGY_KEV));
           needsBar.rectWidth = total.energy * scale;
           hasBar.rectWidth = total.px * scale;
-          needsValue.string = formatEnergy(total.energy, 4, "/c");
-          needsValue.left = BAR_LEFT + needsBar.rectWidth + 5;
+          needsValue.string = formatEnergy(
+            total.energy,
+            ANNIHILATION_EVENT_NODE_SETTINGS.ENERGY_FORMAT_ENERGY_DIGITS,
+            "/c",
+          );
+          needsValue.left = BAR_LEFT + needsBar.rectWidth + ANNIHILATION_EVENT_NODE_SETTINGS.CONSTRUCTOR_LEFT_OFFSET;
           needsValue.centerY = NEEDS_Y;
-          hasValue.string = formatEnergy(total.px, 4, "/c");
-          hasValue.left = BAR_LEFT + hasBar.rectWidth + 5;
+          hasValue.string = formatEnergy(total.px, ANNIHILATION_EVENT_NODE_SETTINGS.PX_FORMAT_ENERGY_DIGITS, "/c");
+          hasValue.left = BAR_LEFT + hasBar.rectWidth + ANNIHILATION_EVENT_NODE_SETTINGS.CONSTRUCTOR_LEFT_OFFSET;
           hasValue.centerY = HAS_Y;
-          verdict.string = StringUtils.fillIn(forbiddenPattern, { deficit: formatEnergy(deficit, 4, "/c") });
+          verdict.string = StringUtils.fillIn(forbiddenPattern, {
+            deficit: formatEnergy(deficit, ANNIHILATION_EVENT_NODE_SETTINGS.VERDICT_DIGITS, "/c"),
+          });
           verdict.top = HAS_Y + 14;
         } else {
           drawPhoton(photon1, photon1Label, first.energy, first.angle, first.energy / total.energy);
@@ -221,6 +235,13 @@ export class AnnihilationEventNode extends Node {
       photon2Label,
       onePhotonLayer,
     ];
-    this.clipArea = Shape.roundRect(0, 0, EVENT_WIDTH, EVENT_HEIGHT, 6, 6);
+    this.clipArea = Shape.roundRect(
+      0,
+      0,
+      EVENT_WIDTH,
+      EVENT_HEIGHT,
+      ANNIHILATION_EVENT_NODE_SETTINGS.CLIP_AREA_CORNER_X,
+      ANNIHILATION_EVENT_NODE_SETTINGS.CLIP_AREA_CORNER_Y,
+    );
   }
 }

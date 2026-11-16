@@ -1,3 +1,4 @@
+import { PAIR_PRODUCTION_SCREEN_VIEW_SETTINGS } from "../../PhotonInteractionsConstants.js";
 /**
  * PairProductionScreenView.ts
  *
@@ -39,9 +40,9 @@ import { PairProductionScreenSummaryContent } from "./PairProductionScreenSummar
 
 export type PairProductionScreenViewOptions = ScreenViewOptions;
 
-const MIDDLE_WIDTH = 290;
+const MIDDLE_WIDTH: number = PAIR_PRODUCTION_SCREEN_VIEW_SETTINGS.MIDDLE_WIDTH;
 const READOUT_WIDTH = MIDDLE_WIDTH - 24;
-const PRESET_BUTTON_TEXT_WIDTH = 58;
+const PRESET_BUTTON_TEXT_WIDTH: number = PAIR_PRODUCTION_SCREEN_VIEW_SETTINGS.PRESET_BUTTON_TEXT_WIDTH;
 const NO_VALUE = "—";
 
 export class PairProductionScreenView extends ScreenView {
@@ -69,7 +70,7 @@ export class PairProductionScreenView extends ScreenView {
 
     const budget = new PairBudgetNode(model);
     budget.left = eventNode.left;
-    budget.top = eventNode.bottom + 12;
+    budget.top = eventNode.bottom + PAIR_PRODUCTION_SCREEN_VIEW_SETTINGS.CONSTRUCTOR_TOP_OFFSET;
 
     // ── Middle: products and equation ───────────────────────────────────────────
     const fromEvent = (format: (event: PairEvent) => string): TReadOnlyProperty<string> =>
@@ -78,25 +79,38 @@ export class PairProductionScreenView extends ScreenView {
       new DerivedProperty([model.eventProperty, common.speedPatternStringProperty], (event, pattern) =>
         event
           ? StringUtils.fillIn(pattern, {
-              value: formatSignificant(betaOfKineticEnergy(PHYSICS.ELECTRON_REST_ENERGY_KEV, kinetic(event)), 3),
+              value: formatSignificant(
+                betaOfKineticEnergy(PHYSICS.ELECTRON_REST_ENERGY_KEV, kinetic(event)),
+                PAIR_PRODUCTION_SCREEN_VIEW_SETTINGS.SPEED_DIGITS,
+              ),
             })
           : NO_VALUE,
       );
     const readouts = new PhotonInteractionsPanel(
       new VBox({
         align: "left",
-        spacing: 5,
+        spacing: PAIR_PRODUCTION_SCREEN_VIEW_SETTINGS.READOUTS_SPACING,
         children: [
           createSectionHeader(strings.readoutsHeadingStringProperty),
           createReadoutRow(
             strings.electronEnergyStringProperty,
-            fromEvent((event) => formatEnergy(event.electronKinetic, 4)),
+            fromEvent((event) =>
+              formatEnergy(
+                event.electronKinetic,
+                PAIR_PRODUCTION_SCREEN_VIEW_SETTINGS.ELECTRON_KINETIC_FORMAT_ENERGY_DIGITS,
+              ),
+            ),
             PhotonInteractionsColors.electronColorProperty,
             READOUT_WIDTH,
           ),
           createReadoutRow(
             strings.positronEnergyStringProperty,
-            fromEvent((event) => formatEnergy(event.positronKinetic, 4)),
+            fromEvent((event) =>
+              formatEnergy(
+                event.positronKinetic,
+                PAIR_PRODUCTION_SCREEN_VIEW_SETTINGS.POSITRON_KINETIC_FORMAT_ENERGY_DIGITS,
+              ),
+            ),
             PhotonInteractionsColors.positronColorProperty,
             READOUT_WIDTH,
           ),
@@ -114,20 +128,33 @@ export class PairProductionScreenView extends ScreenView {
           ),
           createReadoutRow(
             strings.nucleusMomentumStringProperty,
-            fromEvent((event) => formatEnergy(event.nucleusMomentum, 3, "/c")),
+            fromEvent((event) =>
+              formatEnergy(
+                event.nucleusMomentum,
+                PAIR_PRODUCTION_SCREEN_VIEW_SETTINGS.NUCLEUS_MOMENTUM_FORMAT_ENERGY_DIGITS,
+                "/c",
+              ),
+            ),
             PhotonInteractionsColors.nucleusColorProperty,
             READOUT_WIDTH,
           ),
           createReadoutRow(
             strings.nucleusKineticStringProperty,
-            fromEvent((event) => formatEnergy(event.nucleusKinetic, 3)),
+            fromEvent((event) =>
+              formatEnergy(
+                event.nucleusKinetic,
+                PAIR_PRODUCTION_SCREEN_VIEW_SETTINGS.NUCLEUS_KINETIC_FORMAT_ENERGY_DIGITS,
+              ),
+            ),
             PhotonInteractionsColors.nucleusColorProperty,
             READOUT_WIDTH,
           ),
           createReadoutRow(
             strings.shortfallStringProperty,
             new DerivedProperty([model.energyProperty, model.shortfallProperty], (energy, shortfall) =>
-              energy > PAIR_REST_ENERGY_KEV ? formatEnergy(shortfall, 3, "/c") : NO_VALUE,
+              energy > PAIR_REST_ENERGY_KEV
+                ? formatEnergy(shortfall, PAIR_PRODUCTION_SCREEN_VIEW_SETTINGS.READOUTS_DIGITS, "/c")
+                : NO_VALUE,
             ),
             PhotonInteractionsColors.limitColorProperty,
             READOUT_WIDTH,
@@ -136,12 +163,12 @@ export class PairProductionScreenView extends ScreenView {
       }),
       { minWidth: MIDDLE_WIDTH },
     );
-    readouts.left = eventNode.right + 14;
+    readouts.left = eventNode.right + PAIR_PRODUCTION_SCREEN_VIEW_SETTINGS.CONSTRUCTOR_LEFT_OFFSET;
     readouts.top = eventNode.top;
 
     const equations = new VBox({
       align: "left",
-      spacing: 8,
+      spacing: PAIR_PRODUCTION_SCREEN_VIEW_SETTINGS.EQUATIONS_SPACING,
       children: [
         new EquationNode("E<sub>γ</sub> = 2mₑc² + K₋ + K₊", showEquationsProperty, MIDDLE_WIDTH),
         new EquationNode("2mₑc² = 1.022 MeV", showEquationsProperty, MIDDLE_WIDTH),
@@ -160,8 +187,8 @@ export class PairProductionScreenView extends ScreenView {
         valuePatternProperty: common.megaelectronvoltsPatternStringProperty,
         accessibleName: a11y.energyStringProperty,
         accessibleHelpText: a11y.energyHelpStringProperty,
-        decimalPlaces: 2,
-        delta: 0.01,
+        decimalPlaces: PAIR_PRODUCTION_SCREEN_VIEW_SETTINGS.ENERGY_CONTROL_DECIMAL_PLACES,
+        delta: PAIR_PRODUCTION_SCREEN_VIEW_SETTINGS.ENERGY_CONTROL_DELTA,
       },
     );
     const preset = (labelProperty: TReadOnlyProperty<string>, energyMeV: number) =>
@@ -181,14 +208,17 @@ export class PairProductionScreenView extends ScreenView {
     const photonPanel = new PhotonInteractionsPanel(
       new VBox({
         align: "left",
-        spacing: 8,
+        spacing: PAIR_PRODUCTION_SCREEN_VIEW_SETTINGS.PHOTON_PANEL_SPACING,
         children: [
           createSectionHeader(strings.photonHeadingStringProperty),
           energyControl,
-          new HBox({ spacing: 5, children: presetButtons }),
+          new HBox({
+            spacing: PAIR_PRODUCTION_SCREEN_VIEW_SETTINGS.CONSTRUCTOR_PHOTON_PANEL_SPACING,
+            children: presetButtons,
+          }),
         ],
       }),
-      { minWidth: CONTROL_WIDTH + 24 },
+      { minWidth: CONTROL_WIDTH + PAIR_PRODUCTION_SCREEN_VIEW_SETTINGS.PHOTON_PANEL_MIN_WIDTH_OFFSET },
     );
 
     const surroundingsRadio = createRadioButtonGroup(
@@ -215,10 +245,10 @@ export class PairProductionScreenView extends ScreenView {
     const surroundingsPanel = new PhotonInteractionsPanel(
       new VBox({
         align: "left",
-        spacing: 8,
+        spacing: PAIR_PRODUCTION_SCREEN_VIEW_SETTINGS.SURROUNDINGS_PANEL_SPACING,
         children: [createSectionHeader(strings.surroundingsHeadingStringProperty), surroundingsRadio],
       }),
-      { minWidth: CONTROL_WIDTH + 24 },
+      { minWidth: CONTROL_WIDTH + PAIR_PRODUCTION_SCREEN_VIEW_SETTINGS.SURROUNDINGS_PANEL_MIN_WIDTH_OFFSET },
     );
 
     const shareControl = createNumberControl(
@@ -241,14 +271,14 @@ export class PairProductionScreenView extends ScreenView {
     const pairPanel = new PhotonInteractionsPanel(
       new VBox({
         align: "left",
-        spacing: 8,
+        spacing: PAIR_PRODUCTION_SCREEN_VIEW_SETTINGS.PAIR_PANEL_SPACING,
         children: [createSectionHeader(strings.pairHeadingStringProperty), shareControl, fieldCheckbox],
       }),
-      { minWidth: CONTROL_WIDTH + 24 },
+      { minWidth: CONTROL_WIDTH + PAIR_PRODUCTION_SCREEN_VIEW_SETTINGS.PAIR_PANEL_MIN_WIDTH_OFFSET },
     );
 
     const rightColumn = new VBox({
-      spacing: 10,
+      spacing: PAIR_PRODUCTION_SCREEN_VIEW_SETTINGS.RIGHT_COLUMN_SPACING,
       align: "right",
       children: [photonPanel, surroundingsPanel, pairPanel],
     });

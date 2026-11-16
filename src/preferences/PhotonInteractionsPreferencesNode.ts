@@ -1,3 +1,4 @@
+import { PHOTON_INTERACTIONS_PREFERENCES_NODE_SETTINGS } from "../PhotonInteractionsConstants.js";
 /**
  * PhotonInteractionsPreferencesNode.ts
  *
@@ -23,27 +24,27 @@ export class PhotonInteractionsPreferencesNode extends VBox {
     // colors (readable on white in both default and projector profiles), not textColorProperty
     // (which is near-white in default mode and would be invisible on the white dialog).
     const header = new Text(prefStrings.titleStringProperty, {
-      font: new PhetFont({ size: 18, weight: "bold" }),
+      font: new PhetFont({ size: PHOTON_INTERACTIONS_PREFERENCES_NODE_SETTINGS.HEADER_FONT_SIZE, weight: "bold" }),
       fill: PhotonInteractionsColors.controlSurfaceTextColorProperty,
     });
 
     const showEquationsCheckbox = new Checkbox(
       preferencesModel.showEquationsProperty,
       new Text(prefStrings.showEquationsStringProperty, {
-        font: new PhetFont(14),
+        font: new PhetFont(PHOTON_INTERACTIONS_PREFERENCES_NODE_SETTINGS.SHOW_EQUATIONS_CHECKBOX_FONT_SIZE),
         fill: PhotonInteractionsColors.controlSurfaceTextColorProperty,
       }),
       {
         checkboxColor: PhotonInteractionsColors.controlSurfaceTextColorProperty,
         checkboxColorBackground: PhotonInteractionsColors.controlSurfaceColorProperty,
-        spacing: 8,
+        spacing: PHOTON_INTERACTIONS_PREFERENCES_NODE_SETTINGS.SHOW_EQUATIONS_CHECKBOX_SPACING,
         ...(tandem && { tandem: tandem.createTandem("showEquationsCheckbox") }),
       },
     );
 
     super({
       align: "left",
-      spacing: 12,
+      spacing: PHOTON_INTERACTIONS_PREFERENCES_NODE_SETTINGS.CONSTRUCTOR_SPACING,
       children: [header, showEquationsCheckbox],
     });
   }

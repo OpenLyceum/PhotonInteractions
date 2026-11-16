@@ -1,3 +1,4 @@
+import { ANNIHILATION_SCREEN_VIEW_SETTINGS } from "../../PhotonInteractionsConstants.js";
 /**
  * AnnihilationScreenView.ts
  *
@@ -38,7 +39,7 @@ import { PetRingNode, RING_RADIUS_PX } from "./PetRingNode.js";
 
 export type AnnihilationScreenViewOptions = ScreenViewOptions;
 
-const MIDDLE_WIDTH = 290;
+const MIDDLE_WIDTH: number = ANNIHILATION_SCREEN_VIEW_SETTINGS.MIDDLE_WIDTH;
 const READOUT_WIDTH = MIDDLE_WIDTH - 24;
 
 export class AnnihilationScreenView extends ScreenView {
@@ -66,20 +67,24 @@ export class AnnihilationScreenView extends ScreenView {
 
     const ring = new PetRingNode(model);
     // The ring node's origin is the ring's centre.
-    ring.x = eventNode.left + RING_RADIUS_PX + 30;
-    ring.y = eventNode.bottom + 16 + RING_RADIUS_PX + 12;
+    ring.x = eventNode.left + RING_RADIUS_PX + ANNIHILATION_SCREEN_VIEW_SETTINGS.CONSTRUCTOR_X_OFFSET;
+    ring.y = eventNode.bottom + ANNIHILATION_SCREEN_VIEW_SETTINGS.CONSTRUCTOR_Y_OFFSET + RING_RADIUS_PX + 12;
     const ringTitle = new Text(strings.petHeadingStringProperty, {
       font: FONTS.CHART_TITLE,
       fill: PhotonInteractionsColors.textColorProperty,
-      maxWidth: 150,
+      maxWidth: ANNIHILATION_SCREEN_VIEW_SETTINGS.RING_TITLE_MAX_WIDTH,
     });
-    ringTitle.left = ring.x + RING_RADIUS_PX + 30;
-    ringTitle.top = eventNode.bottom + 20;
+    ringTitle.left = ring.x + RING_RADIUS_PX + ANNIHILATION_SCREEN_VIEW_SETTINGS.CONSTRUCTOR_LEFT_OFFSET;
+    ringTitle.top = eventNode.bottom + ANNIHILATION_SCREEN_VIEW_SETTINGS.CONSTRUCTOR_TOP_OFFSET;
     const countText = new Text(
       new DerivedProperty([strings.petCountPatternStringProperty, model.coincidenceCountProperty], (pattern, count) =>
         StringUtils.fillIn(pattern, { count }),
       ),
-      { font: FONTS.READOUT, fill: PhotonInteractionsColors.textColorProperty, maxWidth: 170 },
+      {
+        font: FONTS.READOUT,
+        fill: PhotonInteractionsColors.textColorProperty,
+        maxWidth: ANNIHILATION_SCREEN_VIEW_SETTINGS.COUNT_TEXT_MAX_WIDTH,
+      },
     );
     countText.left = ringTitle.left;
     countText.top = ringTitle.bottom + 10;
@@ -87,15 +92,17 @@ export class AnnihilationScreenView extends ScreenView {
     // ── Middle: the two photons ─────────────────────────────────────────────────
     const fromPhoton = (index: 0 | 1, format: (photon: FourMomentum) => string): TReadOnlyProperty<string> =>
       new DerivedProperty([model.photonsProperty], (photons) => format(photons[index]));
-    const energy = (photon: FourMomentum): string => formatEnergy(photon.energy, 4);
-    const wavelength = (photon: FourMomentum): string => formatWavelength(wavelengthOfEnergy(photon.energy), 4);
+    const energy = (photon: FourMomentum): string =>
+      formatEnergy(photon.energy, ANNIHILATION_SCREEN_VIEW_SETTINGS.ENERGY_FORMAT_ENERGY_DIGITS);
+    const wavelength = (photon: FourMomentum): string =>
+      formatWavelength(wavelengthOfEnergy(photon.energy), ANNIHILATION_SCREEN_VIEW_SETTINGS.WAVELENGTH_DIGITS);
     const direction = (photon: FourMomentum): string => formatDegrees(photon.angle);
     const first = PhotonInteractionsColors.photonColorProperty;
     const second = PhotonInteractionsColors.scatteredPhotonColorProperty;
     const readouts = new PhotonInteractionsPanel(
       new VBox({
         align: "left",
-        spacing: 5,
+        spacing: ANNIHILATION_SCREEN_VIEW_SETTINGS.READOUTS_SPACING,
         children: [
           createSectionHeader(strings.readoutsHeadingStringProperty),
           createReadoutRow(strings.photon1EnergyStringProperty, fromPhoton(0, energy), first, READOUT_WIDTH),
@@ -112,7 +119,9 @@ export class AnnihilationScreenView extends ScreenView {
           ),
           createReadoutRow(
             strings.totalEnergyStringProperty,
-            new DerivedProperty([model.totalProperty], (total) => formatEnergy(total.energy, 4)),
+            new DerivedProperty([model.totalProperty], (total) =>
+              formatEnergy(total.energy, ANNIHILATION_SCREEN_VIEW_SETTINGS.ENERGY_FORMAT_ENERGY_DIGITS),
+            ),
             PhotonInteractionsColors.textColorProperty,
             READOUT_WIDTH,
           ),
@@ -125,7 +134,7 @@ export class AnnihilationScreenView extends ScreenView {
 
     const equations = new VBox({
       align: "left",
-      spacing: 8,
+      spacing: ANNIHILATION_SCREEN_VIEW_SETTINGS.EQUATIONS_SPACING,
       children: [
         new EquationNode("e⁺ + e⁻ → γ + γ", showEquationsProperty, MIDDLE_WIDTH),
         new EquationNode("E₁ + E₂ = K + 2mₑc²", showEquationsProperty, MIDDLE_WIDTH),
@@ -144,17 +153,17 @@ export class AnnihilationScreenView extends ScreenView {
         valuePatternProperty: common.megaelectronvoltsPatternStringProperty,
         accessibleName: a11y.kineticStringProperty,
         accessibleHelpText: a11y.kineticHelpStringProperty,
-        decimalPlaces: 2,
-        delta: 0.01,
+        decimalPlaces: ANNIHILATION_SCREEN_VIEW_SETTINGS.KINETIC_CONTROL_DECIMAL_PLACES,
+        delta: ANNIHILATION_SCREEN_VIEW_SETTINGS.KINETIC_CONTROL_DELTA,
       },
     );
     const positronPanel = new PhotonInteractionsPanel(
       new VBox({
         align: "left",
-        spacing: 8,
+        spacing: ANNIHILATION_SCREEN_VIEW_SETTINGS.POSITRON_PANEL_SPACING,
         children: [createSectionHeader(strings.positronHeadingStringProperty), kineticControl],
       }),
-      { minWidth: CONTROL_WIDTH + 24 },
+      { minWidth: CONTROL_WIDTH + ANNIHILATION_SCREEN_VIEW_SETTINGS.POSITRON_PANEL_MIN_WIDTH_OFFSET },
     );
 
     const angleControl = createNumberControl(
@@ -177,10 +186,10 @@ export class AnnihilationScreenView extends ScreenView {
     const photonsPanel = new PhotonInteractionsPanel(
       new VBox({
         align: "left",
-        spacing: 8,
+        spacing: ANNIHILATION_SCREEN_VIEW_SETTINGS.PHOTONS_PANEL_SPACING,
         children: [createSectionHeader(strings.photonsHeadingStringProperty), angleControl, onePhotonCheckbox],
       }),
-      { minWidth: CONTROL_WIDTH + 24 },
+      { minWidth: CONTROL_WIDTH + ANNIHILATION_SCREEN_VIEW_SETTINGS.PHOTONS_PANEL_MIN_WIDTH_OFFSET },
     );
 
     const recordCheckbox = createCheckbox(
@@ -203,14 +212,14 @@ export class AnnihilationScreenView extends ScreenView {
     const scannerPanel = new PhotonInteractionsPanel(
       new VBox({
         align: "left",
-        spacing: 8,
+        spacing: ANNIHILATION_SCREEN_VIEW_SETTINGS.SCANNER_PANEL_SPACING,
         children: [createSectionHeader(strings.petHeadingStringProperty), recordCheckbox, tracerCheckbox, clearButton],
       }),
-      { minWidth: CONTROL_WIDTH + 24 },
+      { minWidth: CONTROL_WIDTH + ANNIHILATION_SCREEN_VIEW_SETTINGS.SCANNER_PANEL_MIN_WIDTH_OFFSET },
     );
 
     const rightColumn = new VBox({
-      spacing: 10,
+      spacing: ANNIHILATION_SCREEN_VIEW_SETTINGS.RIGHT_COLUMN_SPACING,
       align: "right",
       children: [positronPanel, photonsPanel, scannerPanel],
     });

@@ -1,3 +1,4 @@
+import { X_RAY_TUBE_NODE_SETTINGS } from "../../PhotonInteractionsConstants.js";
 /**
  * XRayTubeNode.ts
  *
@@ -23,15 +24,15 @@ import PhotonInteractionsColors from "../../PhotonInteractionsColors.js";
 import { FONTS, XRAY } from "../../PhotonInteractionsConstants.js";
 import type { XRayTubeModel } from "../model/XRayTubeModel.js";
 
-const TUBE_WIDTH = 420;
-const TUBE_HEIGHT = 200;
+const TUBE_WIDTH: number = X_RAY_TUBE_NODE_SETTINGS.TUBE_WIDTH;
+const TUBE_HEIGHT: number = X_RAY_TUBE_NODE_SETTINGS.TUBE_HEIGHT;
 
-const AXIS_Y = 78;
-const CATHODE_X = 78;
-const ANODE_X = 318;
+const AXIS_Y: number = X_RAY_TUBE_NODE_SETTINGS.AXIS_Y;
+const CATHODE_X: number = X_RAY_TUBE_NODE_SETTINGS.CATHODE_X;
+const ANODE_X: number = X_RAY_TUBE_NODE_SETTINGS.ANODE_X;
 const FOCAL_SPOT = new Vector2(ANODE_X, AXIS_Y);
-const ELECTRONS_PER_MA = 2;
-const PHOTON_LENGTH = 92;
+const ELECTRONS_PER_MA: number = X_RAY_TUBE_NODE_SETTINGS.ELECTRONS_PER_MA;
+const PHOTON_LENGTH: number = X_RAY_TUBE_NODE_SETTINGS.PHOTON_LENGTH;
 /** Wavelength multiples of λ_min of the three representative photons, and their directions (radians below −x). */
 const PHOTONS = [
   { factor: 1, angle: 1.95 },
@@ -54,13 +55,19 @@ export class XRayTubeNode extends Node {
     const frame = new Rectangle(0, 0, TUBE_WIDTH, TUBE_HEIGHT, {
       fill: PhotonInteractionsColors.chartBackgroundColorProperty,
       stroke: PhotonInteractionsColors.panelBorderColorProperty,
-      cornerRadius: 6,
+      cornerRadius: X_RAY_TUBE_NODE_SETTINGS.FRAME_CORNER_RADIUS,
     });
-    const glass = new Rectangle(40, 32, 340, 92, {
-      stroke: PhotonInteractionsColors.apparatusColorProperty,
-      lineWidth: 2,
-      cornerRadius: 46,
-    });
+    const glass = new Rectangle(
+      X_RAY_TUBE_NODE_SETTINGS.GLASS_X,
+      X_RAY_TUBE_NODE_SETTINGS.GLASS_Y,
+      X_RAY_TUBE_NODE_SETTINGS.GLASS_WIDTH,
+      X_RAY_TUBE_NODE_SETTINGS.GLASS_HEIGHT,
+      {
+        stroke: PhotonInteractionsColors.apparatusColorProperty,
+        lineWidth: X_RAY_TUBE_NODE_SETTINGS.GLASS_LINE_WIDTH,
+        cornerRadius: X_RAY_TUBE_NODE_SETTINGS.GLASS_CORNER_RADIUS,
+      },
+    );
 
     // Cathode: a focusing cup with a filament inside it.
     const cup = new Path(
@@ -69,7 +76,7 @@ export class XRayTubeNode extends Node {
         .lineTo(CATHODE_X - 18, AXIS_Y - 20)
         .lineTo(CATHODE_X - 18, AXIS_Y + 20)
         .lineTo(CATHODE_X, AXIS_Y + 20),
-      { stroke: PhotonInteractionsColors.apparatusColorProperty, lineWidth: 4 },
+      { stroke: PhotonInteractionsColors.apparatusColorProperty, lineWidth: X_RAY_TUBE_NODE_SETTINGS.CUP_LINE_WIDTH },
     );
     const filament = new Path(
       new Shape()
@@ -80,11 +87,20 @@ export class XRayTubeNode extends Node {
         .lineTo(CATHODE_X - 10, AXIS_Y + 4)
         .lineTo(CATHODE_X - 4, AXIS_Y + 8)
         .lineTo(CATHODE_X - 10, AXIS_Y + 12),
-      { stroke: PhotonInteractionsColors.scatteredPhotonColorProperty, lineWidth: 2 },
+      {
+        stroke: PhotonInteractionsColors.scatteredPhotonColorProperty,
+        lineWidth: X_RAY_TUBE_NODE_SETTINGS.FILAMENT_LINE_WIDTH,
+      },
     );
-    const cathodeLead = new Rectangle(8, AXIS_Y - 3, CATHODE_X - 26, 6, {
-      fill: PhotonInteractionsColors.apparatusColorProperty,
-    });
+    const cathodeLead = new Rectangle(
+      X_RAY_TUBE_NODE_SETTINGS.CATHODE_LEAD_X,
+      AXIS_Y - 3,
+      CATHODE_X - 26,
+      X_RAY_TUBE_NODE_SETTINGS.CATHODE_LEAD_HEIGHT,
+      {
+        fill: PhotonInteractionsColors.apparatusColorProperty,
+      },
+    );
 
     // Anode: a block whose face is angled so the X-rays leave sideways.
     const anode = new Path(
@@ -97,12 +113,18 @@ export class XRayTubeNode extends Node {
       {
         fill: PhotonInteractionsColors.apparatusFillColorProperty,
         stroke: PhotonInteractionsColors.apparatusColorProperty,
-        lineWidth: 2,
+        lineWidth: X_RAY_TUBE_NODE_SETTINGS.ANODE_LINE_WIDTH,
       },
     );
-    const anodeLead = new Rectangle(ANODE_X + 44, AXIS_Y - 3, TUBE_WIDTH - 8 - ANODE_X - 44, 6, {
-      fill: PhotonInteractionsColors.apparatusColorProperty,
-    });
+    const anodeLead = new Rectangle(
+      ANODE_X + 44,
+      AXIS_Y - 3,
+      TUBE_WIDTH - 8 - ANODE_X - 44,
+      X_RAY_TUBE_NODE_SETTINGS.ANODE_LEAD_HEIGHT,
+      {
+        fill: PhotonInteractionsColors.apparatusColorProperty,
+      },
+    );
     const anodeSymbol = new Text("", {
       font: FONTS.PARTICLE_LABEL,
       fill: PhotonInteractionsColors.textColorProperty,
@@ -116,13 +138,13 @@ export class XRayTubeNode extends Node {
       const text = new Text(textProperty, {
         font: FONTS.TICK_LABEL,
         fill: PhotonInteractionsColors.secondaryTextColorProperty,
-        maxWidth: 90,
+        maxWidth: X_RAY_TUBE_NODE_SETTINGS.TEXT_MAX_WIDTH,
       });
       const signText = new Text(sign, { font: FONTS.BIG_LABEL, fill: PhotonInteractionsColors.textColorProperty });
       const place = (): void => {
         text.centerX = centerX;
-        text.top = 8;
-        signText.right = text.left - 4;
+        text.top = X_RAY_TUBE_NODE_SETTINGS.TOP_TOP;
+        signText.right = text.left - X_RAY_TUBE_NODE_SETTINGS.PLACE_RIGHT_OFFSET;
         signText.centerY = text.centerY;
       };
       text.localBoundsProperty.lazyLink(place);
@@ -133,11 +155,15 @@ export class XRayTubeNode extends Node {
     Multilink.multilink([common.kilovoltsPatternStringProperty, model.voltageProperty], (pattern, voltage) => {
       voltageText.string = StringUtils.fillIn(pattern, { value: formatTickValue(voltage, 0) });
       voltageText.centerX = (CATHODE_X + ANODE_X) / 2;
-      voltageText.top = 8;
+      voltageText.top = X_RAY_TUBE_NODE_SETTINGS.TOP_TOP;
     });
 
     for (let i = 0; i < ELECTRONS_PER_MA * XRAY.CURRENT_MAX_MA; i++) {
-      this.electrons.push(new Circle(3, { fill: PhotonInteractionsColors.electronColorProperty }));
+      this.electrons.push(
+        new Circle(X_RAY_TUBE_NODE_SETTINGS.CONSTRUCTOR_RADIUS, {
+          fill: PhotonInteractionsColors.electronColorProperty,
+        }),
+      );
     }
 
     const photons = PHOTONS.map(
@@ -183,7 +209,14 @@ export class XRayTubeNode extends Node {
       label(strings.anodeStringProperty, ANODE_X + 30, "+"),
       voltageText,
     ];
-    this.clipArea = Shape.roundRect(0, 0, TUBE_WIDTH, TUBE_HEIGHT, 6, 6);
+    this.clipArea = Shape.roundRect(
+      0,
+      0,
+      TUBE_WIDTH,
+      TUBE_HEIGHT,
+      X_RAY_TUBE_NODE_SETTINGS.CLIP_AREA_CORNER_X,
+      X_RAY_TUBE_NODE_SETTINGS.CLIP_AREA_CORNER_Y,
+    );
     this.step(0);
   }
 
@@ -200,7 +233,7 @@ export class XRayTubeNode extends Node {
         // Uniform acceleration from rest: distance grows as time squared.
         electron.centerX = CATHODE_X + gap * u * u;
         // A deterministic scatter across the beam, so the electrons are not on one line.
-        electron.centerY = AXIS_Y + 7 * Math.sin(i * 2.4);
+        electron.centerY = AXIS_Y + X_RAY_TUBE_NODE_SETTINGS.STEP_CENTER_Y_FACTOR * Math.sin(i * 2.4);
       }
     });
   }

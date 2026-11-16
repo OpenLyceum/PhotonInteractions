@@ -1,3 +1,4 @@
+import { XRAY_NUMERICS } from "../../PhotonInteractionsConstants.js";
 /**
  * xraySpectrum.ts
  *
@@ -63,7 +64,7 @@ export const spectrumPerWavelength = (wavelengthPm: number, voltageKV: number, t
       const centre = wavelengthOfEnergy(line.energyKeV);
       const sigma = XRAY.LINE_RELATIVE_SIGMA * centre;
       const offset = (wavelengthPm - centre) / sigma;
-      if (Math.abs(offset) < 6) {
+      if (Math.abs(offset) < XRAY_NUMERICS.LINE_SIGMA_CUTOFF) {
         intensity += strength * Math.exp(-0.5 * offset * offset);
       }
     }

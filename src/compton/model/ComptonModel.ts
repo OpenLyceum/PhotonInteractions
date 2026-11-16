@@ -184,7 +184,7 @@ export class ComptonModel implements TModel {
       return;
     }
     // Cap dt so a tab returning from the background does not fire thousands at once.
-    this.pendingEvents += COMPTON.FIRE_RATE_PER_S * Math.min(dt, 0.1);
+    this.pendingEvents += COMPTON.FIRE_RATE_PER_S * Math.min(dt, COMPTON.MAX_FRAME_DT);
     const count = Math.floor(this.pendingEvents);
     if (count > 0) {
       this.pendingEvents -= count;

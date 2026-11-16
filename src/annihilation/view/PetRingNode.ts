@@ -1,3 +1,4 @@
+import { PET_RING_NODE_SETTINGS } from "../../PhotonInteractionsConstants.js";
 /**
  * PetRingNode.ts
  *
@@ -23,10 +24,10 @@ import type { AnnihilationModel } from "../model/AnnihilationModel.js";
 import { detectorPosition } from "../model/petRing.js";
 
 /** Ring radius on screen, px. */
-export const RING_RADIUS_PX = 104;
-const DETECTOR_DEPTH = 12;
-const TRACER_RADIUS = 8;
-const KEYBOARD_STEP_CM = 2;
+export const RING_RADIUS_PX: number = PET_RING_NODE_SETTINGS.RING_RADIUS_PX;
+const DETECTOR_DEPTH: number = PET_RING_NODE_SETTINGS.DETECTOR_DEPTH;
+const TRACER_RADIUS: number = PET_RING_NODE_SETTINGS.TRACER_RADIUS;
+const KEYBOARD_STEP_CM: number = PET_RING_NODE_SETTINGS.KEYBOARD_STEP_CM;
 
 class Handle extends InteractiveHighlighting(Circle) {}
 
@@ -69,9 +70,12 @@ export class PetRingNode extends Node {
     const lines = new Path(null, {
       stroke: PhotonInteractionsColors.photonColorProperty,
       lineWidth: 1,
-      opacity: 0.45,
+      opacity: PET_RING_NODE_SETTINGS.LINES_OPACITY,
     });
-    const latest = new Path(null, { stroke: PhotonInteractionsColors.scatteredPhotonColorProperty, lineWidth: 2 });
+    const latest = new Path(null, {
+      stroke: PhotonInteractionsColors.scatteredPhotonColorProperty,
+      lineWidth: PET_RING_NODE_SETTINGS.LATEST_LINE_WIDTH,
+    });
 
     const tracer = new Handle(TRACER_RADIUS, {
       fill: PhotonInteractionsColors.positronColorProperty,
@@ -84,7 +88,7 @@ export class PetRingNode extends Node {
       accessibleHelpText: a11y.tracerHelpStringProperty,
       visibleProperty: model.showTracerProperty,
     });
-    tracer.touchArea = tracer.localBounds.dilated(10);
+    tracer.touchArea = tracer.localBounds.dilated(PET_RING_NODE_SETTINGS.TRACER_DILATION);
     this.tracer = tracer;
 
     const clampToDisk = (position: Vector2): Vector2 =>

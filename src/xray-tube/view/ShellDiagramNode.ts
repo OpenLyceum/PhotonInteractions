@@ -1,3 +1,4 @@
+import { SHELL_DIAGRAM_NODE_SETTINGS } from "../../PhotonInteractionsConstants.js";
 /**
  * ShellDiagramNode.ts
  *
@@ -17,14 +18,14 @@ import PhotonInteractionsColors from "../../PhotonInteractionsColors.js";
 import { FONTS } from "../../PhotonInteractionsConstants.js";
 import type { XRayTubeModel } from "../model/XRayTubeModel.js";
 
-export const SHELL_WIDTH = 290;
-const SHELL_HEIGHT = 150;
+export const SHELL_WIDTH: number = SHELL_DIAGRAM_NODE_SETTINGS.SHELL_WIDTH;
+const SHELL_HEIGHT: number = SHELL_DIAGRAM_NODE_SETTINGS.SHELL_HEIGHT;
 
-const CENTER = new Vector2(74, 92);
+const CENTER = new Vector2(SHELL_DIAGRAM_NODE_SETTINGS.CENTER_X, SHELL_DIAGRAM_NODE_SETTINGS.CENTER_Y);
 const SHELLS = [
-  { name: "K", radius: 16, electrons: 2 },
-  { name: "L", radius: 34, electrons: 8 },
-  { name: "M", radius: 52, electrons: 12 },
+  { name: "K", radius: SHELL_DIAGRAM_NODE_SETTINGS.SHELLS_RADIUS, electrons: 2 },
+  { name: "L", radius: SHELL_DIAGRAM_NODE_SETTINGS.SHELLS_ITEM_2_RADIUS, electrons: 8 },
+  { name: "M", radius: SHELL_DIAGRAM_NODE_SETTINGS.SHELLS_ITEM_3_RADIUS, electrons: 12 },
 ] as const;
 
 export class ShellDiagramNode extends Node {
@@ -35,17 +36,20 @@ export class ShellDiagramNode extends Node {
     const frame = new Rectangle(0, 0, SHELL_WIDTH, SHELL_HEIGHT, {
       fill: PhotonInteractionsColors.chartBackgroundColorProperty,
       stroke: PhotonInteractionsColors.panelBorderColorProperty,
-      cornerRadius: 6,
+      cornerRadius: SHELL_DIAGRAM_NODE_SETTINGS.FRAME_CORNER_RADIUS,
     });
     const title = new Text(strings.shellTitleStringProperty, {
       font: FONTS.CHART_TITLE,
       fill: PhotonInteractionsColors.textColorProperty,
-      maxWidth: SHELL_WIDTH - 20,
-      left: 10,
-      top: 8,
+      maxWidth: SHELL_WIDTH - SHELL_DIAGRAM_NODE_SETTINGS.TITLE_MAX_WIDTH_OFFSET,
+      left: SHELL_DIAGRAM_NODE_SETTINGS.TITLE_LEFT,
+      top: SHELL_DIAGRAM_NODE_SETTINGS.TITLE_TOP,
     });
 
-    const nucleus = new Circle(6, { fill: PhotonInteractionsColors.nucleusColorProperty, center: CENTER });
+    const nucleus = new Circle(SHELL_DIAGRAM_NODE_SETTINGS.NUCLEUS_RADIUS, {
+      fill: PhotonInteractionsColors.nucleusColorProperty,
+      center: CENTER,
+    });
     const rings: Node[] = [];
     const electrons: Node[] = [];
     let vacancy: Circle | null = null;
@@ -66,13 +70,16 @@ export class ShellDiagramNode extends Node {
       for (let i = 0; i < shell.electrons; i++) {
         // Start on the right so the K electron that gets knocked out faces the transition arrows.
         const position = CENTER.plus(Vector2.createPolar(shell.radius, (2 * Math.PI * i) / shell.electrons));
-        const dot = new Circle(3, { fill: PhotonInteractionsColors.electronColorProperty, center: position });
+        const dot = new Circle(SHELL_DIAGRAM_NODE_SETTINGS.DOT_RADIUS, {
+          fill: PhotonInteractionsColors.electronColorProperty,
+          center: position,
+        });
         electrons.push(dot);
         if (shell.name === "K" && i === 0) {
           // The same spot, drawn hollow once the electron has been knocked out.
-          vacancy = new Circle(3, {
+          vacancy = new Circle(SHELL_DIAGRAM_NODE_SETTINGS.CONSTRUCTOR_RADIUS, {
             stroke: PhotonInteractionsColors.limitColorProperty,
-            lineWidth: 1.5,
+            lineWidth: SHELL_DIAGRAM_NODE_SETTINGS.CONSTRUCTOR_LINE_WIDTH,
             center: position,
           });
           model.kShellIonizedProperty.link((ionized) => {
@@ -88,23 +95,29 @@ export class ShellDiagramNode extends Node {
       const arrow = new ArrowNode(CENTER.x + fromRadius - 4, CENTER.y + offsetY, hole.x + 5, hole.y + offsetY, {
         fill: PhotonInteractionsColors.photonColorProperty,
         stroke: null,
-        tailWidth: 2,
-        headWidth: 7,
-        headHeight: 7,
+        tailWidth: SHELL_DIAGRAM_NODE_SETTINGS.ARROW_TAIL_WIDTH,
+        headWidth: SHELL_DIAGRAM_NODE_SETTINGS.ARROW_HEAD_WIDTH,
+        headHeight: SHELL_DIAGRAM_NODE_SETTINGS.ARROW_HEAD_HEIGHT,
       });
       const text = new Text(label, { font: FONTS.PARTICLE_LABEL, fill: PhotonInteractionsColors.photonColorProperty });
-      text.left = CENTER.x + SHELLS[2].radius + 8;
-      text.centerY = CENTER.y - 34 + (offsetY > 0 ? 18 : 0);
+      text.left = CENTER.x + SHELLS[2].radius + SHELL_DIAGRAM_NODE_SETTINGS.TRANSITION_LEFT_OFFSET;
+      text.centerY =
+        CENTER.y -
+        SHELL_DIAGRAM_NODE_SETTINGS.TRANSITION_CENTER_Y_OFFSET +
+        (offsetY > 0 ? SHELL_DIAGRAM_NODE_SETTINGS.TRANSITION_CENTER_Y : 0);
       return new Node({ children: [arrow, text] });
     };
     const transitions = new Node({
-      children: [transition(SHELLS[1].radius, -5, "Kα:  L → K"), transition(SHELLS[2].radius, 5, "Kβ:  M → K")],
+      children: [
+        transition(SHELLS[1].radius, SHELL_DIAGRAM_NODE_SETTINGS.RADIUS_TRANSITION_OFFSET_Y, "Kα:  L → K"),
+        transition(SHELLS[2].radius, SHELL_DIAGRAM_NODE_SETTINGS.RADIUS_TRANSITION_OFFSET_Y_SEGMENT_2, "Kβ:  M → K"),
+      ],
     });
 
     const caption = new RichText("", {
       font: FONTS.TICK_LABEL,
       fill: PhotonInteractionsColors.textColorProperty,
-      lineWrap: 130,
+      lineWrap: SHELL_DIAGRAM_NODE_SETTINGS.CAPTION_LINE_WRAP,
     });
     Multilink.multilink(
       [model.kShellIonizedProperty, strings.belowEdgeStringProperty, strings.aboveEdgeStringProperty],
@@ -117,8 +130,8 @@ export class ShellDiagramNode extends Node {
         caption.fill = ionized
           ? PhotonInteractionsColors.textColorProperty
           : PhotonInteractionsColors.limitColorProperty;
-        caption.left = CENTER.x + SHELLS[2].radius + 8;
-        caption.top = ionized ? CENTER.y + 4 : CENTER.y - 30;
+        caption.left = CENTER.x + SHELLS[2].radius + SHELL_DIAGRAM_NODE_SETTINGS.CONSTRUCTOR_LEFT_OFFSET;
+        caption.top = ionized ? CENTER.y + SHELL_DIAGRAM_NODE_SETTINGS.CONSTRUCTOR_TOP_OFFSET : CENTER.y - 30;
       },
     );
 

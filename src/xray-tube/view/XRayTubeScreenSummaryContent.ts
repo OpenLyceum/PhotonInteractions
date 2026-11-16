@@ -1,3 +1,4 @@
+import { X_RAY_TUBE_SCREEN_SUMMARY_CONTENT_SETTINGS } from "../../PhotonInteractionsConstants.js";
 /**
  * XRayTubeScreenSummaryContent.ts
  *
@@ -41,8 +42,14 @@ export class XRayTubeScreenSummaryContent extends ScreenSummaryContent {
         return StringUtils.fillIn(a11y.currentDetailsPatternStringProperty.value, {
           target: targetNames[model.targetIdProperty.value].value,
           voltage: formatTickValue(model.voltageProperty.value, 0),
-          minimumWavelength: formatWavelength(model.minimumWavelengthProperty.value, 3),
-          maximumEnergy: formatEnergy(model.voltageProperty.value, 3),
+          minimumWavelength: formatWavelength(
+            model.minimumWavelengthProperty.value,
+            X_RAY_TUBE_SCREEN_SUMMARY_CONTENT_SETTINGS.VALUE_FORMAT_WAVELENGTH_DIGITS,
+          ),
+          maximumEnergy: formatEnergy(
+            model.voltageProperty.value,
+            X_RAY_TUBE_SCREEN_SUMMARY_CONTENT_SETTINGS.VALUE_FORMAT_ENERGY_DIGITS,
+          ),
           lines: lines.length > 0 ? lines.join(", ") : a11y.noLinesStringProperty.value,
         });
       },

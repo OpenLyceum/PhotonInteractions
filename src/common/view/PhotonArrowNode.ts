@@ -1,3 +1,4 @@
+import { PHOTON_ARROW_NODE_SETTINGS } from "../../PhotonInteractionsConstants.js";
 /**
  * PhotonArrowNode.ts
  *
@@ -10,16 +11,16 @@ import type { Vector2 } from "scenerystack/dot";
 import { Shape } from "scenerystack/kite";
 import { Node, Path, type TPaint } from "scenerystack/scenery";
 
-const HEAD_LENGTH = 11;
-const HEAD_HALF_WIDTH = 5.5;
-const AMPLITUDE = 5;
-const SAMPLE_SPACING = 1.5;
+const HEAD_LENGTH: number = PHOTON_ARROW_NODE_SETTINGS.HEAD_LENGTH;
+const HEAD_HALF_WIDTH: number = PHOTON_ARROW_NODE_SETTINGS.HEAD_HALF_WIDTH;
+const AMPLITUDE: number = PHOTON_ARROW_NODE_SETTINGS.AMPLITUDE;
+const SAMPLE_SPACING: number = PHOTON_ARROW_NODE_SETTINGS.SAMPLE_SPACING;
 
 export class PhotonArrowNode extends Node {
   private readonly wave: Path;
   private readonly head: Path;
 
-  public constructor(paint: TPaint, lineWidth = 2) {
+  public constructor(paint: TPaint, lineWidth: number = PHOTON_ARROW_NODE_SETTINGS.DEFAULT_LINE_WIDTH) {
     super();
     this.wave = new Path(null, { stroke: paint, lineWidth, lineJoin: "round" });
     this.head = new Path(null, { fill: paint });
