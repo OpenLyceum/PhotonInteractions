@@ -1,4 +1,3 @@
-import { COMPTON_SCREEN_SUMMARY_CONTENT_SETTINGS } from "../../PhotonInteractionsConstants.js";
 /**
  * ComptonScreenSummaryContent.ts
  *
@@ -11,6 +10,7 @@ import { StringUtils } from "scenerystack/phetcommon";
 import { ScreenSummaryContent } from "scenerystack/sim";
 import { formatDegrees, formatEnergy, formatWavelength } from "../../common/view/chartUtils.js";
 import { StringManager } from "../../i18n/StringManager.js";
+import { COMPTON_VIEW } from "../../PhotonInteractionsConstants.js";
 import type { ComptonModel } from "../model/ComptonModel.js";
 
 export class ComptonScreenSummaryContent extends ScreenSummaryContent {
@@ -28,32 +28,17 @@ export class ComptonScreenSummaryContent extends ScreenSummaryContent {
       ],
       () =>
         StringUtils.fillIn(a11y.currentDetailsPatternStringProperty.value, {
-          energy: formatEnergy(
-            model.energyProperty.value,
-            COMPTON_SCREEN_SUMMARY_CONTENT_SETTINGS.VALUE_FORMAT_ENERGY_DIGITS,
-          ),
-          wavelength: formatWavelength(
-            model.wavelengthProperty.value,
-            COMPTON_SCREEN_SUMMARY_CONTENT_SETTINGS.VALUE_FORMAT_WAVELENGTH_DIGITS,
-          ),
+          energy: formatEnergy(model.energyProperty.value, COMPTON_VIEW.SUMMARY_ENERGY_DIGITS),
+          wavelength: formatWavelength(model.wavelengthProperty.value, COMPTON_VIEW.SUMMARY_WAVELENGTH_DIGITS),
           angle: formatDegrees(model.thetaProperty.value, 0),
-          shift: formatWavelength(
-            model.shiftProperty.value,
-            COMPTON_SCREEN_SUMMARY_CONTENT_SETTINGS.VALUE_FORMAT_WAVELENGTH_DIGITS_SEGMENT_2,
-          ),
+          shift: formatWavelength(model.shiftProperty.value, COMPTON_VIEW.SUMMARY_SHIFT_DIGITS),
           scatteredWavelength: formatWavelength(
             model.scatteredWavelengthProperty.value,
-            COMPTON_SCREEN_SUMMARY_CONTENT_SETTINGS.VALUE_FORMAT_WAVELENGTH_DIGITS,
+            COMPTON_VIEW.SUMMARY_WAVELENGTH_DIGITS,
           ),
-          scatteredEnergy: formatEnergy(
-            model.scatteredEnergyProperty.value,
-            COMPTON_SCREEN_SUMMARY_CONTENT_SETTINGS.VALUE_FORMAT_ENERGY_DIGITS,
-          ),
+          scatteredEnergy: formatEnergy(model.scatteredEnergyProperty.value, COMPTON_VIEW.SUMMARY_ENERGY_DIGITS),
           recoilAngle: formatDegrees(model.recoilAngleProperty.value, 0),
-          kinetic: formatEnergy(
-            model.recoilKineticProperty.value,
-            COMPTON_SCREEN_SUMMARY_CONTENT_SETTINGS.VALUE_FORMAT_ENERGY_DIGITS,
-          ),
+          kinetic: formatEnergy(model.recoilKineticProperty.value, COMPTON_VIEW.SUMMARY_ENERGY_DIGITS),
         }),
     );
 

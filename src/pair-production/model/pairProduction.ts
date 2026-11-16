@@ -1,4 +1,3 @@
-import { PAIR_NUMERICS } from "../../PhotonInteractionsConstants.js";
 /**
  * pairProduction.ts
  *
@@ -12,7 +11,7 @@ import { PAIR_NUMERICS } from "../../PhotonInteractionsConstants.js";
  */
 
 import { FourMomentum } from "../../common/model/fourMomentum.js";
-import { PHYSICS } from "../../PhotonInteractionsConstants.js";
+import { PAIR, PHYSICS } from "../../PhotonInteractionsConstants.js";
 
 const ELECTRON: number = PHYSICS.ELECTRON_REST_ENERGY_KEV;
 
@@ -66,7 +65,7 @@ export const pairEvent = (energy: number, share: number, nucleusRestEnergy: numb
   let event: PairEvent | null = null;
   // Fixed-point iteration on the nucleus's kinetic energy; it converges in two or three rounds
   // because that energy is a millionth of the rest.
-  for (let i = 0; i < PAIR_NUMERICS.RECOIL_ITERATIONS; i++) {
+  for (let i = 0; i < PAIR.RECOIL_ITERATIONS; i++) {
     const available = Math.max(0, energy - PAIR_REST_ENERGY_KEV - nucleusKinetic);
     const electronKinetic = share * available;
     const positronKinetic = available - electronKinetic;

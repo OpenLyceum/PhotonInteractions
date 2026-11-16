@@ -1,4 +1,3 @@
-import { COMPTON_CHARTS_NODE_SETTINGS } from "../../PhotonInteractionsConstants.js";
 /**
  * ComptonChartsNode.ts
  *
@@ -22,31 +21,31 @@ import { ChartFrameNode } from "../../common/view/ChartFrameNode.js";
 import { formatEnergyParts } from "../../common/view/chartUtils.js";
 import { StringManager } from "../../i18n/StringManager.js";
 import PhotonInteractionsColors from "../../PhotonInteractionsColors.js";
-import { COMPTON, FONTS } from "../../PhotonInteractionsConstants.js";
+import { COMPTON, COMPTON_VIEW, FONTS } from "../../PhotonInteractionsConstants.js";
 import type { ComptonModel } from "../model/ComptonModel.js";
 import { comptonShift, scatteredEnergy, spectrometerIntensity } from "../model/compton.js";
 
-const WIDTH: number = COMPTON_CHARTS_NODE_SETTINGS.WIDTH;
-const HEIGHT: number = COMPTON_CHARTS_NODE_SETTINGS.HEIGHT;
-const SAMPLES: number = COMPTON_CHARTS_NODE_SETTINGS.SAMPLES;
+const WIDTH: number = COMPTON_VIEW.CHART_WIDTH;
+const HEIGHT: number = COMPTON_VIEW.CHART_HEIGHT;
+const SAMPLES: number = COMPTON_VIEW.CHART_SAMPLES;
 
 /** Top of the shift chart, pm: just above the 180° shift of 2h/mc = 4.85 pm. */
-const SHIFT_AXIS_MAX_PM: number = COMPTON_CHARTS_NODE_SETTINGS.SHIFT_AXIS_MAX_PM;
+const SHIFT_AXIS_MAX_PM: number = COMPTON_VIEW.SHIFT_AXIS_MAX_PM;
 
 type Paint = typeof PhotonInteractionsColors.textColorProperty;
 
 const chartLabel = (content: TReadOnlyProperty<string> | string, fill: Paint): Text =>
-  new Text(content, { font: FONTS.TICK_LABEL, fill, maxWidth: COMPTON_CHARTS_NODE_SETTINGS.CHART_LABEL_MAX_WIDTH });
+  new Text(content, { font: FONTS.TICK_LABEL, fill, maxWidth: COMPTON_VIEW.CHART_LABEL_MAX_WIDTH });
 
 const titled = (titleProperty: TReadOnlyProperty<string>, chart: Node): Node =>
   new VBox({
     align: "left",
-    spacing: COMPTON_CHARTS_NODE_SETTINGS.TITLED_SPACING,
+    spacing: COMPTON_VIEW.TITLED_CHART_SPACING,
     children: [
       new Text(titleProperty, {
         font: FONTS.CHART_TITLE,
         fill: PhotonInteractionsColors.textColorProperty,
-        maxWidth: WIDTH + COMPTON_CHARTS_NODE_SETTINGS.TITLED_MAX_WIDTH_OFFSET,
+        maxWidth: WIDTH + COMPTON_VIEW.CHART_TITLE_WIDTH_PAD,
       }),
       chart,
     ],
@@ -61,7 +60,7 @@ export class ComptonChartsNode extends Node {
     const shiftChart = new ChartFrameNode({
       viewWidth: WIDTH,
       viewHeight: HEIGHT,
-      xRange: new Range(0, COMPTON_CHARTS_NODE_SETTINGS.SHIFT_CHART_RANGE_MAX),
+      xRange: new Range(0, COMPTON_VIEW.SHIFT_CHART_RANGE_MAX),
       yRange: new Range(0, SHIFT_AXIS_MAX_PM),
       xAxisLabelProperty: strings.shiftChartXStringProperty,
       yAxisLabelProperty: strings.shiftChartYStringProperty,
@@ -75,27 +74,24 @@ export class ComptonChartsNode extends Node {
     }
     const shiftCurve = new LinePlot(shiftTransform, shiftPoints, {
       stroke: PhotonInteractionsColors.scatteredPhotonColorProperty,
-      lineWidth: COMPTON_CHARTS_NODE_SETTINGS.SHIFT_CURVE_LINE_WIDTH,
+      lineWidth: COMPTON_VIEW.SHIFT_CURVE_LINE_WIDTH,
     });
     // E′/E shares the plot, scaled so that 1 is the top of the frame; its own axis is on the right.
     const ratioCurve = new LinePlot(shiftTransform, [], {
       stroke: PhotonInteractionsColors.electronColorProperty,
-      lineWidth: COMPTON_CHARTS_NODE_SETTINGS.RATIO_CURVE_LINE_WIDTH,
-      lineDash: [
-        COMPTON_CHARTS_NODE_SETTINGS.RATIO_CURVE_LINE_DASH_DASH,
-        COMPTON_CHARTS_NODE_SETTINGS.CONSTRUCTOR_RATIO_CURVE_LINE_DASH_DASH,
-      ],
+      lineWidth: COMPTON_VIEW.RATIO_CURVE_LINE_WIDTH,
+      lineDash: [COMPTON_VIEW.RATIO_CURVE_DASH, COMPTON_VIEW.RATIO_CURVE_GAP],
     });
     shiftChart.plotLayer.children = [ratioCurve, shiftCurve];
-    const shiftMarker = new Circle(COMPTON_CHARTS_NODE_SETTINGS.SHIFT_MARKER_RADIUS, {
+    const shiftMarker = new Circle(COMPTON_VIEW.SHIFT_MARKER_RADIUS, {
       fill: PhotonInteractionsColors.scatteredPhotonColorProperty,
     });
-    const ratioMarker = new Circle(COMPTON_CHARTS_NODE_SETTINGS.RATIO_MARKER_RADIUS, {
+    const ratioMarker = new Circle(COMPTON_VIEW.RATIO_MARKER_RADIUS, {
       fill: PhotonInteractionsColors.electronColorProperty,
     });
     const ratioTicks = [0, 0.5, 1].map((value) => {
       const tick = chartLabel(String(value), PhotonInteractionsColors.electronColorProperty);
-      tick.left = WIDTH + COMPTON_CHARTS_NODE_SETTINGS.RATIO_TICKS_LEFT_OFFSET;
+      tick.left = WIDTH + COMPTON_VIEW.RATIO_TICKS_LEFT_GAP;
       tick.centerY = shiftTransform.modelToViewY(value * SHIFT_AXIS_MAX_PM);
       return tick;
     });
@@ -105,7 +101,7 @@ export class ComptonChartsNode extends Node {
     );
     ratioAxisLabel.rotation = -Math.PI / 2;
     const placeRatioAxisLabel = (): void => {
-      ratioAxisLabel.left = WIDTH + COMPTON_CHARTS_NODE_SETTINGS.PLACE_RATIO_AXIS_LABEL_LEFT_OFFSET;
+      ratioAxisLabel.left = WIDTH + COMPTON_VIEW.RATIO_AXIS_LABEL_LEFT_GAP;
       ratioAxisLabel.centerY = HEIGHT / 2;
     };
     ratioAxisLabel.localBoundsProperty.lazyLink(placeRatioAxisLabel);
@@ -136,7 +132,7 @@ export class ComptonChartsNode extends Node {
       viewWidth: WIDTH,
       viewHeight: HEIGHT,
       xRange: new Range(COMPTON.SPECTROMETER_SHIFT_MIN_PM, COMPTON.SPECTROMETER_SHIFT_MAX_PM),
-      yRange: new Range(0, COMPTON_CHARTS_NODE_SETTINGS.SPECTROMETER_CHART_RANGE_MAX),
+      yRange: new Range(0, COMPTON_VIEW.SPECTROMETER_CHART_RANGE_MAX),
       xAxisLabelProperty: strings.spectrometerXStringProperty,
       yAxisLabelProperty: strings.spectrometerYStringProperty,
       targetDivisions: 6,
@@ -144,15 +140,12 @@ export class ComptonChartsNode extends Node {
     const spectrometerTransform = spectrometerChart.chartTransform;
     const spectrometerCurve = new LinePlot(spectrometerTransform, [], {
       stroke: PhotonInteractionsColors.textColorProperty,
-      lineWidth: COMPTON_CHARTS_NODE_SETTINGS.SPECTROMETER_CURVE_LINE_WIDTH,
+      lineWidth: COMPTON_VIEW.SPECTROMETER_CURVE_LINE_WIDTH,
     });
     const verticalLine = (stroke: Paint): Line =>
       new Line(0, 0, 0, HEIGHT, {
         stroke,
-        lineDash: [
-          COMPTON_CHARTS_NODE_SETTINGS.VERTICAL_LINE_LINE_DASH_DASH,
-          COMPTON_CHARTS_NODE_SETTINGS.VERTICAL_LINE_LINE_DASH_DASH,
-        ],
+        lineDash: [COMPTON_VIEW.SPECTROMETER_PEAK_DASH, COMPTON_VIEW.SPECTROMETER_PEAK_DASH],
       });
     const unshiftedLine = verticalLine(PhotonInteractionsColors.photonColorProperty);
     unshiftedLine.x = spectrometerTransform.modelToViewX(0);
@@ -188,13 +181,13 @@ export class ComptonChartsNode extends Node {
         unshiftedLabel.visible = includeBound;
         // Labels along the top of the frame, the shifted one a row lower when the two would collide.
         unshiftedLabel.centerX = unshiftedLine.x;
-        unshiftedLabel.top = COMPTON_CHARTS_NODE_SETTINGS.TOP_TOP;
+        unshiftedLabel.top = COMPTON_VIEW.SPECTROMETER_LABEL_TOP;
         shiftedLabel.centerX = Math.min(
-          WIDTH - shiftedLabel.width / 2 - COMPTON_CHARTS_NODE_SETTINGS.CONSTRUCTOR_CENTER_X_OFFSET,
+          WIDTH - shiftedLabel.width / 2 - COMPTON_VIEW.SHIFTED_LABEL_CENTER_NUDGE,
           shiftedX,
         );
         const collide = includeBound && shiftedLabel.left < unshiftedLabel.right + 6;
-        shiftedLabel.top = collide ? COMPTON_CHARTS_NODE_SETTINGS.CONSTRUCTOR_TOP : 3;
+        shiftedLabel.top = collide ? COMPTON_VIEW.SHIFTED_LABEL_TOP_COLLIDE : 3;
       },
     );
 
@@ -218,7 +211,7 @@ export class ComptonChartsNode extends Node {
     const bars = new Path(null, { fill: PhotonInteractionsColors.histogramColorProperty });
     const expectedCurve = new LinePlot(detectorTransform, [], {
       stroke: PhotonInteractionsColors.textColorProperty,
-      lineWidth: COMPTON_CHARTS_NODE_SETTINGS.EXPECTED_CURVE_LINE_WIDTH,
+      lineWidth: COMPTON_VIEW.EXPECTED_CURVE_LINE_WIDTH,
     });
     const edgeLine = verticalLine(PhotonInteractionsColors.limitColorProperty);
     const peakLine = verticalLine(PhotonInteractionsColors.photonColorProperty);
@@ -229,8 +222,7 @@ export class ComptonChartsNode extends Node {
 
     const updateDetector = (): void => {
       const energy = model.energyProperty.value;
-      const unitScale =
-        energy / Number(formatEnergyParts(energy, COMPTON_CHARTS_NODE_SETTINGS.UNIT_SCALE_DIGITS).value);
+      const unitScale = energy / Number(formatEnergyParts(energy, COMPTON_VIEW.UNIT_SCALE_DIGITS).value);
       const xMax = (COMPTON.DETECTOR_RANGE_FACTOR * energy) / unitScale;
       const binWidth = xMax / COMPTON.DETECTOR_BINS;
       const fractions = model.expectedFractionsProperty.value;
@@ -256,16 +248,10 @@ export class ComptonChartsNode extends Node {
 
       edgeLine.x = detectorTransform.modelToViewX(model.comptonEdgeProperty.value / unitScale);
       peakLine.x = detectorTransform.modelToViewX(energy / unitScale);
-      peakLabel.right = Math.min(
-        WIDTH - COMPTON_CHARTS_NODE_SETTINGS.UPDATE_DETECTOR_RIGHT_OFFSET,
-        peakLine.x + peakLabel.width / 2,
-      );
-      peakLabel.top = COMPTON_CHARTS_NODE_SETTINGS.TOP_TOP;
-      edgeLabel.right = Math.min(
-        peakLabel.left - COMPTON_CHARTS_NODE_SETTINGS.CONSTRUCTOR_UPDATE_DETECTOR_RIGHT_OFFSET,
-        edgeLine.x + edgeLabel.width / 2,
-      );
-      edgeLabel.top = COMPTON_CHARTS_NODE_SETTINGS.TOP_TOP;
+      peakLabel.right = Math.min(WIDTH - COMPTON_VIEW.PHOTOPEAK_LABEL_RIGHT_GAP, peakLine.x + peakLabel.width / 2);
+      peakLabel.top = COMPTON_VIEW.SPECTROMETER_LABEL_TOP;
+      edgeLabel.right = Math.min(peakLabel.left - COMPTON_VIEW.EDGE_LABEL_RIGHT_GAP, edgeLine.x + edgeLabel.width / 2);
+      edgeLabel.top = COMPTON_VIEW.SPECTROMETER_LABEL_TOP;
     };
     model.histogramChangedEmitter.addListener(updateDetector);
     model.expectedFractionsProperty.link(updateDetector);

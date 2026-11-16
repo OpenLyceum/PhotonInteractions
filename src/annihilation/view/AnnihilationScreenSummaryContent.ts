@@ -1,4 +1,3 @@
-import { ANNIHILATION_SCREEN_SUMMARY_CONTENT_SETTINGS } from "../../PhotonInteractionsConstants.js";
 /**
  * AnnihilationScreenSummaryContent.ts
  *
@@ -11,6 +10,7 @@ import { StringUtils } from "scenerystack/phetcommon";
 import { ScreenSummaryContent } from "scenerystack/sim";
 import { formatDegrees, formatEnergy } from "../../common/view/chartUtils.js";
 import { StringManager } from "../../i18n/StringManager.js";
+import { ANNIHILATION_VIEW } from "../../PhotonInteractionsConstants.js";
 import type { AnnihilationModel } from "../model/AnnihilationModel.js";
 
 export class AnnihilationScreenSummaryContent extends ScreenSummaryContent {
@@ -26,13 +26,10 @@ export class AnnihilationScreenSummaryContent extends ScreenSummaryContent {
       ],
       (kinetic, [first, second], opening, pattern) =>
         StringUtils.fillIn(pattern, {
-          kinetic: formatEnergy(kinetic, ANNIHILATION_SCREEN_SUMMARY_CONTENT_SETTINGS.CURRENT_DETAILS_PROPERTY_DIGITS),
-          energy1: formatEnergy(first.energy, ANNIHILATION_SCREEN_SUMMARY_CONTENT_SETTINGS.ENERGY_FORMAT_ENERGY_DIGITS),
+          kinetic: formatEnergy(kinetic, ANNIHILATION_VIEW.SUMMARY_KINETIC_DIGITS),
+          energy1: formatEnergy(first.energy, ANNIHILATION_VIEW.SUMMARY_PHOTON_DIGITS),
           angle1: formatDegrees(first.angle, 0),
-          energy2: formatEnergy(
-            second.energy,
-            ANNIHILATION_SCREEN_SUMMARY_CONTENT_SETTINGS.ENERGY_FORMAT_ENERGY_DIGITS,
-          ),
+          energy2: formatEnergy(second.energy, ANNIHILATION_VIEW.SUMMARY_PHOTON_DIGITS),
           angle2: formatDegrees(second.angle, 0),
           opening: formatDegrees(opening, 0),
         }),

@@ -1,4 +1,3 @@
-import { X_RAY_TUBE_SCREEN_SUMMARY_CONTENT_SETTINGS } from "../../PhotonInteractionsConstants.js";
 /**
  * XRayTubeScreenSummaryContent.ts
  *
@@ -12,6 +11,7 @@ import { StringUtils } from "scenerystack/phetcommon";
 import { ScreenSummaryContent } from "scenerystack/sim";
 import { formatEnergy, formatTickValue, formatWavelength } from "../../common/view/chartUtils.js";
 import { StringManager } from "../../i18n/StringManager.js";
+import { XRAY_VIEW } from "../../PhotonInteractionsConstants.js";
 import type { XRayTubeModel } from "../model/XRayTubeModel.js";
 import type { XRayTargetId } from "../model/xrayTargets.js";
 
@@ -44,12 +44,9 @@ export class XRayTubeScreenSummaryContent extends ScreenSummaryContent {
           voltage: formatTickValue(model.voltageProperty.value, 0),
           minimumWavelength: formatWavelength(
             model.minimumWavelengthProperty.value,
-            X_RAY_TUBE_SCREEN_SUMMARY_CONTENT_SETTINGS.VALUE_FORMAT_WAVELENGTH_DIGITS,
+            XRAY_VIEW.SUMMARY_WAVELENGTH_DIGITS,
           ),
-          maximumEnergy: formatEnergy(
-            model.voltageProperty.value,
-            X_RAY_TUBE_SCREEN_SUMMARY_CONTENT_SETTINGS.VALUE_FORMAT_ENERGY_DIGITS,
-          ),
+          maximumEnergy: formatEnergy(model.voltageProperty.value, XRAY_VIEW.SUMMARY_ENERGY_DIGITS),
           lines: lines.length > 0 ? lines.join(", ") : a11y.noLinesStringProperty.value,
         });
       },

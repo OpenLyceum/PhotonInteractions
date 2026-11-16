@@ -9,16 +9,17 @@
  * photon arrows look right, and scaled up fourfold to the standard 548 × 373
  * icon canvas.
  */
+
 import { Vector2 } from "scenerystack/dot";
 import { Shape } from "scenerystack/kite";
 import { Circle, Line, Node, Path, Rectangle, type TPaint } from "scenerystack/scenery";
 import { ArrowNode } from "scenerystack/scenery-phet";
 import { ScreenIcon } from "scenerystack/sim";
 import PhotonInteractionsColors from "../PhotonInteractionsColors.js";
-import { PHOTON_INTERACTIONS_SCREEN_ICONS_SETTINGS } from "../PhotonInteractionsConstants.js";
+import { SCREEN_ICONS } from "../PhotonInteractionsConstants.js";
 import { PhotonArrowNode } from "./view/PhotonArrowNode.js";
 
-const SCALE: number = PHOTON_INTERACTIONS_SCREEN_ICONS_SETTINGS.SCALE;
+const SCALE: number = SCREEN_ICONS.SCALE;
 const W = 548 / SCALE;
 const H = 373 / SCALE;
 
@@ -26,13 +27,9 @@ function iconFrom(...content: Node[]): ScreenIcon {
   return new ScreenIcon(
     new Node({
       children: [
-        new Rectangle(
-          0,
-          0,
-          PHOTON_INTERACTIONS_SCREEN_ICONS_SETTINGS.ICON_FROM_WIDTH,
-          PHOTON_INTERACTIONS_SCREEN_ICONS_SETTINGS.ICON_FROM_HEIGHT,
-          { fill: PhotonInteractionsColors.backgroundColorProperty },
-        ),
+        new Rectangle(0, 0, SCREEN_ICONS.ICON_FROM_WIDTH, SCREEN_ICONS.ICON_FROM_HEIGHT, {
+          fill: PhotonInteractionsColors.backgroundColorProperty,
+        }),
         new Node({ children: content, scale: SCALE }),
       ],
     }),
@@ -54,9 +51,9 @@ const arrow = (x1: number, y1: number, x2: number, y2: number, fill: TPaint): Ar
   new ArrowNode(x1, y1, x2, y2, {
     fill,
     stroke: null,
-    headWidth: PHOTON_INTERACTIONS_SCREEN_ICONS_SETTINGS.ARROW_HEAD_WIDTH,
-    headHeight: PHOTON_INTERACTIONS_SCREEN_ICONS_SETTINGS.ARROW_HEAD_HEIGHT,
-    tailWidth: PHOTON_INTERACTIONS_SCREEN_ICONS_SETTINGS.ARROW_TAIL_WIDTH,
+    headWidth: SCREEN_ICONS.ARROW_HEAD_WIDTH,
+    headHeight: SCREEN_ICONS.ARROW_HEAD_HEIGHT,
+    tailWidth: SCREEN_ICONS.ARROW_TAIL_WIDTH,
   });
 
 /** A photon comes in, scatters upward with a longer wavelength, and the electron recoils downward. */
@@ -67,7 +64,7 @@ export function createComptonIcon(): ScreenIcon {
     photon(8, cy, cx - 8, cy, PhotonInteractionsColors.photonColorProperty, 9),
     photon(cx + 5, cy - 6, cx + 48, cy - 40, PhotonInteractionsColors.scatteredPhotonColorProperty, 16),
     arrow(cx + 6, cy + 4, cx + 44, cy + 26, PhotonInteractionsColors.electronColorProperty),
-    new Circle(PHOTON_INTERACTIONS_SCREEN_ICONS_SETTINGS.CREATE_COMPTON_ICON_RADIUS, {
+    new Circle(SCREEN_ICONS.COMPTON_ELECTRON_RADIUS, {
       x: cx,
       y: cy,
       fill: PhotonInteractionsColors.electronColorProperty,
@@ -77,7 +74,7 @@ export function createComptonIcon(): ScreenIcon {
 
 /** A spectrum: nothing below the cutoff, a hump, and two characteristic lines. */
 export function createXRayTubeIcon(): ScreenIcon {
-  const left: number = PHOTON_INTERACTIONS_SCREEN_ICONS_SETTINGS.LEFT;
+  const left: number = SCREEN_ICONS.COMPTON_PHOTON_LEFT;
   const base = H - 14;
   const cutoff = 34;
   const curve = new Shape().moveTo(left, base).lineTo(cutoff, base);
@@ -91,20 +88,20 @@ export function createXRayTubeIcon(): ScreenIcon {
   return iconFrom(
     new Line(left, base, W - 10, base, {
       stroke: PhotonInteractionsColors.chartAxisColorProperty,
-      lineWidth: PHOTON_INTERACTIONS_SCREEN_ICONS_SETTINGS.CREATE_X_RAY_TUBE_ICON_LINE_WIDTH,
+      lineWidth: SCREEN_ICONS.XRAY_LIMIT_LINE_WIDTH,
     }),
-    new Line(left, base, left, PHOTON_INTERACTIONS_SCREEN_ICONS_SETTINGS.CREATE_X_RAY_TUBE_ICON_END_Y, {
+    new Line(left, base, left, SCREEN_ICONS.XRAY_SPECTRUM_TOP_Y, {
       stroke: PhotonInteractionsColors.chartAxisColorProperty,
-      lineWidth: PHOTON_INTERACTIONS_SCREEN_ICONS_SETTINGS.CREATE_X_RAY_TUBE_ICON_LINE_WIDTH,
+      lineWidth: SCREEN_ICONS.XRAY_LIMIT_LINE_WIDTH,
     }),
-    new Line(cutoff, base, cutoff, PHOTON_INTERACTIONS_SCREEN_ICONS_SETTINGS.CREATE_X_RAY_TUBE_ICON_END_Y_SEGMENT_2, {
+    new Line(cutoff, base, cutoff, SCREEN_ICONS.XRAY_LIMIT_LINE_TOP_Y, {
       stroke: PhotonInteractionsColors.limitColorProperty,
-      lineWidth: PHOTON_INTERACTIONS_SCREEN_ICONS_SETTINGS.CREATE_X_RAY_TUBE_ICON_LINE_WIDTH,
-      lineDash: [PHOTON_INTERACTIONS_SCREEN_ICONS_SETTINGS.CREATE_X_RAY_TUBE_ICON_LINE_DASH_DASH, 3],
+      lineWidth: SCREEN_ICONS.XRAY_LIMIT_LINE_WIDTH,
+      lineDash: [SCREEN_ICONS.XRAY_LIMIT_DASH, 3],
     }),
     new Path(curve, {
       stroke: PhotonInteractionsColors.photonColorProperty,
-      lineWidth: PHOTON_INTERACTIONS_SCREEN_ICONS_SETTINGS.CREATE_X_RAY_TUBE_ICON_LINE_WIDTH_VARIANT_2,
+      lineWidth: SCREEN_ICONS.XRAY_SPECTRUM_LINE_WIDTH,
       lineJoin: "round",
     }),
   );
@@ -131,13 +128,13 @@ export function createPairProductionIcon(): ScreenIcon {
     photon(6, cy, cx - 9, cy, PhotonInteractionsColors.photonColorProperty, 9),
     new Path(curl(-1), {
       stroke: PhotonInteractionsColors.electronColorProperty,
-      lineWidth: PHOTON_INTERACTIONS_SCREEN_ICONS_SETTINGS.CREATE_PAIR_PRODUCTION_ICON_LINE_WIDTH,
+      lineWidth: SCREEN_ICONS.PAIR_TRACK_LINE_WIDTH,
     }),
     new Path(curl(1), {
       stroke: PhotonInteractionsColors.positronColorProperty,
-      lineWidth: PHOTON_INTERACTIONS_SCREEN_ICONS_SETTINGS.CREATE_PAIR_PRODUCTION_ICON_LINE_WIDTH,
+      lineWidth: SCREEN_ICONS.PAIR_TRACK_LINE_WIDTH,
     }),
-    new Circle(PHOTON_INTERACTIONS_SCREEN_ICONS_SETTINGS.CREATE_PAIR_PRODUCTION_ICON_RADIUS, {
+    new Circle(SCREEN_ICONS.PAIR_PARTICLE_RADIUS, {
       x: cx,
       y: cy,
       fill: PhotonInteractionsColors.nucleusColorProperty,
@@ -152,13 +149,13 @@ export function createAnnihilationIcon(): ScreenIcon {
   return iconFrom(
     photon(cx - 14, cy - 5, 10, cy - 30, PhotonInteractionsColors.photonColorProperty, 11),
     photon(cx + 14, cy + 5, W - 10, cy + 30, PhotonInteractionsColors.scatteredPhotonColorProperty, 11),
-    new Circle(PHOTON_INTERACTIONS_SCREEN_ICONS_SETTINGS.CREATE_ANNIHILATION_ICON_RADIUS, {
-      x: cx - PHOTON_INTERACTIONS_SCREEN_ICONS_SETTINGS.CREATE_ANNIHILATION_ICON_X_OFFSET,
+    new Circle(SCREEN_ICONS.ANNIHILATION_PARTICLE_RADIUS, {
+      x: cx - SCREEN_ICONS.ANNIHILATION_PARTICLE_X_OFFSET,
       y: cy,
       fill: PhotonInteractionsColors.positronColorProperty,
     }),
-    new Circle(PHOTON_INTERACTIONS_SCREEN_ICONS_SETTINGS.CREATE_ANNIHILATION_ICON_RADIUS, {
-      x: cx + PHOTON_INTERACTIONS_SCREEN_ICONS_SETTINGS.CREATE_ANNIHILATION_ICON_X_OFFSET,
+    new Circle(SCREEN_ICONS.ANNIHILATION_PARTICLE_RADIUS, {
+      x: cx + SCREEN_ICONS.ANNIHILATION_PARTICLE_X_OFFSET,
       y: cy,
       fill: PhotonInteractionsColors.electronColorProperty,
     }),

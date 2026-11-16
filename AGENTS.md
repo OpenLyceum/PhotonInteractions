@@ -57,7 +57,7 @@ Physics, data and references: [`doc/model.md`](doc/model.md). Architecture and d
 | `src/common/view/ChartFrameNode.ts` | bamboo chart frame with re-rangeable grid/ticks (parks spacing while re-ranging) |
 | `src/common/view/controlHelpers.ts` | Themed controls shared by every screen (from RelativisticDynamics) |
 | `src/PhotonInteractionsColors.ts` | Colours **and the colour language** (yellow photon, orange scattered photon, cyan electron, pink positron, violet nucleus, red limits): read its header before adding a colour |
-| `src/PhotonInteractionsConstants.ts` | Grouped `as const` blocks: `PHYSICS`, `COMPTON`, `XRAY`, `PAIR`, `ANNIHILATION`, `FONTS` |
+| `src/PhotonInteractionsConstants.ts` | Grouped `as const` blocks: `PHYSICS`, `COMPTON`, `XRAY`, `PAIR`, `ANNIHILATION`, `PANEL`/`CHART`/`CONTROLS`, `SCREEN_ICONS`, `PHOTON_ARROW`, `*_VIEW`, `FONTS` |
 | `src/preferences/` | One preference, Show equations (`?showEquations=false`), passed to each Screen |
 
 ## Accessibility

@@ -1,4 +1,3 @@
-import { PHOTON_INTERACTIONS_PANEL_SETTINGS } from "../PhotonInteractionsConstants.js";
 /**
  * PhotonInteractionsPanel.ts
  *
@@ -30,7 +29,7 @@ import { type EmptySelfOptions, optionize } from "scenerystack/phet-core";
 import type { Node } from "scenerystack/scenery";
 import { Panel, type PanelOptions } from "scenerystack/sun";
 import PhotonInteractionsColors from "../PhotonInteractionsColors.js";
-import { PANEL_CORNER_RADIUS } from "../PhotonInteractionsConstants.js";
+import { PANEL, PANEL_CORNER_RADIUS } from "../PhotonInteractionsConstants.js";
 
 export type PhotonInteractionsPanelOptions = PanelOptions;
 
@@ -41,8 +40,8 @@ export class PhotonInteractionsPanel extends Panel {
         fill: PhotonInteractionsColors.panelBackgroundColorProperty,
         stroke: PhotonInteractionsColors.panelBorderColorProperty,
         cornerRadius: PANEL_CORNER_RADIUS,
-        xMargin: PHOTON_INTERACTIONS_PANEL_SETTINGS.OPTIONS_X_MARGIN,
-        yMargin: PHOTON_INTERACTIONS_PANEL_SETTINGS.OPTIONS_Y_MARGIN,
+        xMargin: PANEL.X_MARGIN,
+        yMargin: PANEL.Y_MARGIN,
       },
       providedOptions,
     );

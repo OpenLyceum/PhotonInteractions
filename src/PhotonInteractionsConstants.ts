@@ -102,6 +102,17 @@ export const COMPTON = {
   FIRE_RATE_PER_S: 240,
   /** Stop counting here, so a forgotten tab does not count for ever. */
   MAX_EVENTS: 50000,
+
+  /** Maximum attempts for sampling a scattered direction (count). */
+  MAX_REJECTION_ATTEMPTS: 1000,
+  /** Integration samples per detector-spectrum bin (count). */
+  CONTINUUM_SAMPLES_PER_BIN: 20,
+  /** Minimum broadening width in detector bins. */
+  MIN_SIGMA_BINS: 1e-9,
+  /** Detector convolution support in standard deviations. */
+  BROADENING_SIGMA_REACH: 4,
+  /** Schematic broadening of the shifted spectrometer line (dimensionless). */
+  SCATTERED_LINE_WIDTH_FACTOR: 1.5,
 } as const;
 
 // ── X-ray tube screen ─────────────────────────────────────────────────────────
@@ -121,6 +132,9 @@ export const XRAY = {
   LINE_RELATIVE_SIGMA: 0.006,
   /** Curve samples across the chart. */
   SPECTRUM_SAMPLES: 600,
+
+  /** Gaussian line cutoff in standard deviations. */
+  LINE_SIGMA_CUTOFF: 6,
 } as const;
 
 // ── Pair-production screen ────────────────────────────────────────────────────
@@ -140,6 +154,9 @@ export const PAIR = {
   /** Rest energies of the two target nuclei, keV: ¹²C and ²⁰⁸Pb, less their electrons. */
   CARBON_NUCLEUS_KEV: 12 * PHYSICS.ATOMIC_MASS_UNIT_KEV - 6 * PHYSICS.ELECTRON_REST_ENERGY_KEV,
   LEAD_NUCLEUS_KEV: 207.9766521 * PHYSICS.ATOMIC_MASS_UNIT_KEV - 82 * PHYSICS.ELECTRON_REST_ENERGY_KEV,
+
+  /** Iterations used to solve the recoil energy (count). */
+  RECOIL_ITERATIONS: 6,
 } as const;
 
 // ── Annihilation screen ───────────────────────────────────────────────────────
@@ -164,225 +181,109 @@ export const ANNIHILATION = {
   MAX_LINES: 120,
 } as const;
 
-/** Settings for annihilation/view/AnnihilationEventNode.ts. Layout lengths are in px; counts and ratios are dimensionless. */
-export const ANNIHILATION_EVENT_NODE_SETTINGS = {
-  ELECTRON_X_OFFSET: 8, // px
-  POSITRON_X_OFFSET: -8, // px
-  ENERGY_FORMAT_ENERGY_DIGITS: 4, // digits
-  PX_FORMAT_ENERGY_DIGITS: 4, // digits
-  VERDICT_DIGITS: 4, // digits
-
-  TITLE_MAX_WIDTH_OFFSET: 20, // px
-  AXIS_LINE_DASH_DASH: 4, // px
-  TEXT_MAX_WIDTH_OFFSET: 18, // px
-  PLACE_RIGHT_OFFSET: 6, // px
-  VERDICT_MAX_WIDTH_OFFSET: 28, // px
-  ONE_PHOTON_LAYER_MAX_WIDTH_OFFSET: 20, // px
-  CONSTRUCTOR_RIGHT_OFFSET: 4, // px
-  CONSTRUCTOR_TOP_OFFSET: 12, // px
-  CONSTRUCTOR_CENTER_X_OFFSET: 6, // px
-  CONSTRUCTOR_BOTTOM_OFFSET: 10, // px
-  CONSTRUCTOR_LEFT_OFFSET: 5, // px
-
-  EVENT_WIDTH: 420,
-  EVENT_HEIGHT: 300,
-  VERTEX_X: 190,
-  VERTEX_Y: 128,
-  PHOTON_MIN_LENGTH: 26,
-  PHOTON_LENGTH_RANGE: 110,
-  /** Drawn wiggle of a 511 keV photon, px; others scale with wavelength. */
-  REST_WIGGLE_PX: 13,
-  /** Minimum drawn length of the positron track, px. */
-  POSITRON_MIN_LENGTH: 34,
-  /** Extra positron-track length range above the minimum, px. */
-  POSITRON_LENGTH_RANGE: 110,
-  /** Left edge of the energy comparison bars, px. */
-  BAR_LEFT: 150,
-  /** Width of the energy comparison bars, px. */
-  BAR_WIDTH: 250,
-  /** Height of the energy comparison bars, px. */
-  BAR_HEIGHT: 12,
-  FRAME_CORNER_RADIUS: 6,
-  TITLE_LEFT: 10,
-  TITLE_TOP: 8,
-  AXIS_START_X: 12,
-  ELECTRON_RADIUS: 7,
-  POSITRON_RADIUS: 7,
-  POSITRON_ARROW_TAIL_WIDTH: 3,
-  POSITRON_ARROW_HEAD_WIDTH: 10,
-  POSITRON_ARROW_HEAD_HEIGHT: 11,
-  NEEDS_Y: 232,
-  HAS_Y: 254,
-  VERDICT_LEFT: 14,
-  ONE_PHOTON_LAYER_LEFT: 10,
-  ONE_PHOTON_LAYER_TOP: 202,
-  CLIP_AREA_CORNER_X: 6,
-  CLIP_AREA_CORNER_Y: 6,
+/** Shared panel margins (px). */
+export const PANEL = {
+  X_MARGIN: 12,
+  Y_MARGIN: 10,
 } as const;
 
-/** Settings for annihilation/view/AnnihilationScreenView.ts. Layout lengths are in px; counts and ratios are dimensionless. */
-export const ANNIHILATION_SCREEN_VIEW_SETTINGS = {
-  ENERGY_FORMAT_ENERGY_DIGITS: 4, // digits
-  WAVELENGTH_DIGITS: 4, // digits
-
-  CONSTRUCTOR_X_OFFSET: 30, // px
-  CONSTRUCTOR_Y_OFFSET: 16, // px
-  CONSTRUCTOR_LEFT_OFFSET: 30, // px
-  CONSTRUCTOR_TOP_OFFSET: 20, // px
-  POSITRON_PANEL_MIN_WIDTH_OFFSET: 24, // px
-  PHOTONS_PANEL_MIN_WIDTH_OFFSET: 24, // px
-  SCANNER_PANEL_MIN_WIDTH_OFFSET: 24, // px
-
-  MIDDLE_WIDTH: 290,
-  RING_TITLE_MAX_WIDTH: 150,
-  COUNT_TEXT_MAX_WIDTH: 170,
-  READOUTS_SPACING: 5,
-  EQUATIONS_SPACING: 8,
-  /** Kinetic control decimal places (dimensionless). */
-  KINETIC_CONTROL_DECIMAL_PLACES: 2,
-  /** Kinetic control delta (dimensionless). */
-  KINETIC_CONTROL_DELTA: 0.01,
-  POSITRON_PANEL_SPACING: 8,
-  PHOTONS_PANEL_SPACING: 8,
-  SCANNER_PANEL_SPACING: 8,
-  RIGHT_COLUMN_SPACING: 10,
+/** Shared bamboo chart chrome (px); DEFAULT_DIGITS is format precision. */
+export const CHART = {
+  AXIS_LABEL_TOP_OFFSET: 20,
+  RIGHT_AXIS_INSET: -32,
+  DEFAULT_DIGITS: 3,
 } as const;
 
-/** Settings for annihilation/view/PetRingNode.ts. Layout lengths are in px; counts and ratios are dimensionless. */
-export const PET_RING_NODE_SETTINGS = {
-  TRACER_DILATION: 10, // px
-
-  /** Ring radius on screen, px. */
-  RING_RADIUS_PX: 104,
-  /** Detector crystal depth drawn outside the ring, px. */
-  DETECTOR_DEPTH: 12,
-  /** Tracer disc radius on the ring plane, px. */
-  TRACER_RADIUS: 8,
-  /** Keyboard step for moving the tracer, cm. */
-  KEYBOARD_STEP_CM: 2,
-  /** Lines opacity (dimensionless). */
-  LINES_OPACITY: 0.45,
-  LATEST_LINE_WIDTH: 2,
+/** Shared control-helper layout (px); factors are dimensionless. */
+export const CONTROLS = {
+  WIDE_NUMBER_CONTROL_Y_SPACING: 10,
+  NUMBER_CONTROL_TITLE_WIDTH_RESERVE: 110,
+  CHECKBOX_LABEL_WIDTH_RESERVE: 30,
+  PUSH_BUTTON_LABEL_WIDTH_RESERVE: 24,
+  RADIO_LABEL_WIDTH_RESERVE: 40,
+  LABEL_MAX_WIDTH_FACTOR: 0.62,
+  VALUE_MAX_WIDTH_FACTOR: 0.38,
+  NARROW_CONTROL_WIDTH: 170,
+  NARROW_NUMBER_CONTROL_Y_SPACING: 6,
+  NUMBER_CONTROL_TRACK_HEIGHT: 4,
+  RADIO_BUTTON_SPACING: 7,
 } as const;
 
-/** Settings for common/PhotonInteractionsPanel.ts. Layout lengths are in px; counts and ratios are dimensionless. */
-export const PHOTON_INTERACTIONS_PANEL_SETTINGS = {
-  OPTIONS_X_MARGIN: 12,
-  OPTIONS_Y_MARGIN: 10,
+/** Preferences panel typography and spacing. */
+export const PREFERENCES = {
+  HEADER_FONT_SIZE: 18,
+  CHECKBOX_FONT_SIZE: 14,
+  CHECKBOX_SPACING: 8,
+  SPACING: 12,
 } as const;
 
-/** Settings for common/PhotonInteractionsScreenIcons.ts. Layout lengths are in px; counts and ratios are dimensionless. */
-export const PHOTON_INTERACTIONS_SCREEN_ICONS_SETTINGS = {
-  CREATE_X_RAY_TUBE_ICON_END_Y_SEGMENT_2: 14, // px
-  CREATE_X_RAY_TUBE_ICON_LINE_WIDTH_VARIANT_2: 2.5, // px
-
-  CREATE_X_RAY_TUBE_ICON_LINE_DASH_DASH: 4, // px
-  CREATE_ANNIHILATION_ICON_X_OFFSET: 7, // px
-
+/** Home-screen icon geometry (px). */
+export const SCREEN_ICONS = {
+  XRAY_LIMIT_LINE_TOP_Y: 14,
+  XRAY_SPECTRUM_LINE_WIDTH: 2.5,
+  XRAY_LIMIT_DASH: 4,
+  ANNIHILATION_PARTICLE_X_OFFSET: 7,
   SCALE: 4,
   ICON_FROM_WIDTH: 548,
   ICON_FROM_HEIGHT: 373,
   ARROW_HEAD_WIDTH: 10,
   ARROW_HEAD_HEIGHT: 10,
   ARROW_TAIL_WIDTH: 3.5,
-  CREATE_COMPTON_ICON_RADIUS: 6,
-  LEFT: 14,
-  CREATE_X_RAY_TUBE_ICON_LINE_WIDTH: 1.5,
-  CREATE_X_RAY_TUBE_ICON_END_Y: 10,
-  CREATE_PAIR_PRODUCTION_ICON_LINE_WIDTH: 2.5,
-  CREATE_PAIR_PRODUCTION_ICON_RADIUS: 6,
-  CREATE_ANNIHILATION_ICON_RADIUS: 7,
+  COMPTON_ELECTRON_RADIUS: 6,
+  COMPTON_PHOTON_LEFT: 14,
+  XRAY_LIMIT_LINE_WIDTH: 1.5,
+  XRAY_SPECTRUM_TOP_Y: 10,
+  PAIR_TRACK_LINE_WIDTH: 2.5,
+  PAIR_PARTICLE_RADIUS: 6,
+  ANNIHILATION_PARTICLE_RADIUS: 7,
 } as const;
 
-/** Settings for common/view/ChartFrameNode.ts. Layout lengths are in px; counts and ratios are dimensionless. */
-export const CHART_FRAME_NODE_SETTINGS = {
-  PLACE_AXIS_LABELS_TOP_OFFSET: 20, // px
-
-  RIGHT_RIGHT: -32,
-} as const;
-
-/** Settings for common/view/PhotonArrowNode.ts. Layout lengths are in px; counts and ratios are dimensionless. */
-export const PHOTON_ARROW_NODE_SETTINGS = {
-  /** PhotonArrowNode.ts   A photon drawn the way physicists draw one: a wavy line with an arrowhead. The  wiggle's wavelength is a parameter, so a scattered photon can be seen to have a  longer wavelength than the incident one. */
+/** Wavy photon-arrow geometry (px). */
+export const PHOTON_ARROW = {
   HEAD_LENGTH: 11,
-  /** PhotonArrowNode.ts   A photon drawn the way physicists draw one: a wavy line with an arrowhead. The  wiggle's wavelength is a parameter, so a scattered photon can be seen to have a  longer wavelength than the incident one. */
   HEAD_HALF_WIDTH: 5.5,
-  /** PhotonArrowNode.ts   A photon drawn the way physicists draw one: a wavy line with an arrowhead. The  wiggle's wavelength is a parameter, so a scattered photon can be seen to have a  longer wavelength than the incident one. */
   AMPLITUDE: 5,
-  /** PhotonArrowNode.ts   A photon drawn the way physicists draw one: a wavy line with an arrowhead. The  wiggle's wavelength is a parameter, so a scattered photon can be seen to have a  longer wavelength than the incident one. */
   SAMPLE_SPACING: 1.5,
   DEFAULT_LINE_WIDTH: 2,
 } as const;
 
-/** Settings for common/view/chartUtils.ts. Layout lengths are in px; counts and ratios are dimensionless. */
-export const CHART_UTILS_SETTINGS = {
-  DEFAULT_DIGITS: 3,
-} as const;
+// ── Per-screen view layout ─────────────────────────────────────────────────
 
-/** Settings for common/view/controlHelpers.ts. Layout lengths are in px; counts and ratios are dimensionless. */
-export const CONTROL_HELPERS_SETTINGS = {
-  CREATE_NUMBER_CONTROL_Y_SPACING_VARIANT_2: 10, // px
-
-  CREATE_NUMBER_CONTROL_MAX_WIDTH_OFFSET: 110, // px
-  CREATE_CHECKBOX_MAX_WIDTH_OFFSET: 30, // px
-  CREATE_PUSH_BUTTON_MAX_WIDTH_OFFSET: 24, // px
-  CREATE_RADIO_BUTTON_GROUP_MAX_WIDTH_OFFSET: 40, // px
-  LABEL_MAX_WIDTH_FACTOR: 0.62, // dimensionless
-  VALUE_MAX_WIDTH_FACTOR: 0.38, // dimensionless
-
-  /** Below this width the title gets its own row. */
-  NARROW_CONTROL_WIDTH: 170,
-  CREATE_NUMBER_CONTROL_Y_SPACING: 6,
-  CREATE_NUMBER_CONTROL_HEIGHT: 4,
-  CREATE_RADIO_BUTTON_GROUP_SPACING: 7,
-} as const;
-
-/** Settings for compton/view/ComptonChartsNode.ts. Layout lengths are in px; counts and ratios are dimensionless. */
-export const COMPTON_CHARTS_NODE_SETTINGS = {
-  UNIT_SCALE_DIGITS: 12, // digits
-
-  TITLED_MAX_WIDTH_OFFSET: 40, // px
-  RATIO_CURVE_LINE_DASH_DASH: 6, // px
-  CONSTRUCTOR_RATIO_CURVE_LINE_DASH_DASH: 4, // px
-  RATIO_TICKS_LEFT_OFFSET: 5, // px
-  PLACE_RATIO_AXIS_LABEL_LEFT_OFFSET: 24, // px
-  VERTICAL_LINE_LINE_DASH_DASH: 4, // px
-  CONSTRUCTOR_CENTER_X_OFFSET: 3, // px
-  CONSTRUCTOR_TOP: 16, // px
-  UPDATE_DETECTOR_RIGHT_OFFSET: 3, // px
-  CONSTRUCTOR_UPDATE_DETECTOR_RIGHT_OFFSET: 6, // px
-
-  WIDTH: 330,
-  HEIGHT: 168,
-  SAMPLES: 180,
-  /** Top of the shift chart, pm: just above the 180° shift of 2h/mc = 4.85 pm. */
+/** Compton screen layout: collision stage, charts, momentum triangle, controls. */
+export const COMPTON_VIEW = {
+  UNIT_SCALE_DIGITS: 12,
+  CHART_TITLE_WIDTH_PAD: 40,
+  RATIO_CURVE_DASH: 6,
+  RATIO_CURVE_GAP: 4,
+  RATIO_TICKS_LEFT_GAP: 5,
+  RATIO_AXIS_LABEL_LEFT_GAP: 24,
+  SPECTROMETER_PEAK_DASH: 4,
+  SHIFTED_LABEL_CENTER_NUDGE: 3,
+  SHIFTED_LABEL_TOP_COLLIDE: 16,
+  PHOTOPEAK_LABEL_RIGHT_GAP: 3,
+  EDGE_LABEL_RIGHT_GAP: 6,
+  CHART_WIDTH: 330,
+  CHART_HEIGHT: 168,
+  CHART_SAMPLES: 180,
   SHIFT_AXIS_MAX_PM: 5,
   CHART_LABEL_MAX_WIDTH: 110,
-  TITLED_SPACING: 6,
-  /** Shift chart range max (in the source module’s documented units). */
+  TITLED_CHART_SPACING: 6,
   SHIFT_CHART_RANGE_MAX: 180,
   SHIFT_CURVE_LINE_WIDTH: 2.5,
   RATIO_CURVE_LINE_WIDTH: 2,
   SHIFT_MARKER_RADIUS: 5,
   RATIO_MARKER_RADIUS: 4,
-  /** Spectrometer chart range max (in the source module’s documented units). */
   SPECTROMETER_CHART_RANGE_MAX: 1.15,
   SPECTROMETER_CURVE_LINE_WIDTH: 2,
-  TOP_TOP: 3,
+  SPECTROMETER_LABEL_TOP: 3,
   EXPECTED_CURVE_LINE_WIDTH: 1.5,
-} as const;
-
-/** Settings for compton/view/ComptonCollisionNode.ts. Layout lengths are in px; counts and ratios are dimensionless. */
-export const COMPTON_COLLISION_NODE_SETTINGS = {
-  DETECTOR_DILATION: 12, // px
-  DETECTOR_DILATION_SEGMENT_2: 6, // px
-
-  TITLE_MAX_WIDTH_OFFSET: 20, // px
-  AXIS_LINE_DASH_DASH: 4, // px
-  CONSTRUCTOR_CENTER_X_OFFSET: 12, // px
-  CONSTRUCTOR_BOTTOM_OFFSET: 12, // px
-  PLACE_INCIDENT_CAPTION_TOP_OFFSET: 12, // px
-
+  DETECTOR_TOUCH_DILATION: 12,
+  DETECTOR_MOUSE_DILATION: 6,
+  COLLISION_TITLE_WIDTH_INSET: 20,
+  COLLISION_AXIS_DASH: 4,
+  INCIDENT_LABEL_CENTER_NUDGE: 12,
+  INCIDENT_LABEL_BOTTOM_GAP: 12,
+  INCIDENT_CAPTION_TOP_GAP: 12,
   COLLISION_WIDTH: 420,
   COLLISION_HEIGHT: 300,
   ORIGIN_X: 180,
@@ -396,9 +297,9 @@ export const COMPTON_COLLISION_NODE_SETTINGS = {
   MAX_WIGGLE_PX: 90,
   ELECTRON_ARROW_MIN: 26,
   ELECTRON_ARROW_MAX: 120,
-  FRAME_CORNER_RADIUS: 6,
-  TITLE_LEFT: 10,
-  TITLE_TOP: 8,
+  COLLISION_FRAME_CORNER_RADIUS: 6,
+  COLLISION_TITLE_LEFT: 10,
+  COLLISION_TITLE_TOP: 8,
   DETECTOR_TRACK_LINE_WIDTH: 1.5,
   ELECTRON_ARROW_TAIL_WIDTH: 3,
   ELECTRON_ARROW_HEAD_WIDTH: 10,
@@ -413,259 +314,110 @@ export const COMPTON_COLLISION_NODE_SETTINGS = {
   DETECTOR_HEIGHT: 26,
   DETECTOR_LINE_WIDTH: 2,
   DETECTOR_CORNER_RADIUS: 3,
-  CLIP_AREA_CORNER_X: 6,
-  CLIP_AREA_CORNER_Y: 6,
-} as const;
-
-/** Settings for compton/view/ComptonScreenView.ts. Layout lengths are in px; counts and ratios are dimensionless. */
-export const COMPTON_SCREEN_VIEW_SETTINGS = {
-  ENERGY_TEXT_DIGITS: 4, // digits
-  WAVELENGTH_TEXT_DIGITS: 5, // digits
-  FRACTIONAL_SHIFT_PROPERTY_DIGITS: 3, // digits
-  ENERGY_VALUE_PROPERTY_DIGITS: 4, // digits
-  ENERGY_SLIDER_WIDTH_DIMENSION2_HEIGHT: 26, // px
-
-  CONSTRUCTOR_LEFT_OFFSET: 4, // px
-  CONSTRUCTOR_TOP_OFFSET: 12, // px
-  CONSTRUCTOR_DETECTOR_CONTROLS_SPACING: 24, // px
-  CONSTRUCTOR_SOURCE_PANEL_SPACING: 6, // px
-  SOURCE_PANEL_MIN_WIDTH_OFFSET: 24, // px
-  SCATTERING_PANEL_MIN_WIDTH_OFFSET: 24, // px
-  GRAPH_PANEL_MIN_WIDTH_OFFSET: 24, // px
-
+  COLLISION_CLIP_CORNER_X: 6,
+  COLLISION_CLIP_CORNER_Y: 6,
+  ENERGY_TEXT_DIGITS: 4,
+  WAVELENGTH_TEXT_DIGITS: 5,
+  FRACTIONAL_SHIFT_DIGITS: 3,
+  ENERGY_VALUE_DIGITS: 4,
+  ENERGY_SLIDER_THUMB_HEIGHT: 26,
+  CHARTS_LEFT_INSET: 4,
+  CONTENT_TOP_GAP: 12,
+  DETECTOR_CONTROLS_INNER_SPACING: 24,
+  SOURCE_PRESET_SPACING: 6,
+  SOURCE_PANEL_WIDTH_PAD: 24,
+  SCATTERING_PANEL_WIDTH_PAD: 24,
+  GRAPH_PANEL_WIDTH_PAD: 24,
   PRESET_BUTTON_TEXT_WIDTH: 92,
   READOUTS_SPACING: 5,
   DETECTOR_CONTROLS_SPACING: 8,
   ENERGY_SLIDER_HEIGHT: 4,
   ENERGY_SLIDER_WIDTH: 14,
-  /** Energy slider keyboard step (dimensionless). */
   ENERGY_SLIDER_KEYBOARD_STEP: 0.05,
-  /** Energy slider shift keyboard step (dimensionless). */
   ENERGY_SLIDER_SHIFT_KEYBOARD_STEP: 0.005,
-  /** Energy slider page keyboard step (dimensionless). */
   ENERGY_SLIDER_PAGE_KEYBOARD_STEP: 0.5,
   SOURCE_PANEL_SPACING: 8,
   SCATTERING_PANEL_SPACING: 8,
   GRAPH_PANEL_SPACING: 8,
   RIGHT_COLUMN_SPACING: 10,
-} as const;
-
-/** Settings for compton/view/MomentumTriangleNode.ts. Layout lengths are in px; counts and ratios are dimensionless. */
-export const MOMENTUM_TRIANGLE_NODE_SETTINGS = {
-  TITLE_MAX_WIDTH_OFFSET: 20, // px
-  CONSTRUCTOR_TOP_OFFSET: 5, // px
-
+  TRIANGLE_TITLE_WIDTH_INSET: 20,
+  TRIANGLE_INCIDENT_LABEL_TOP_GAP: 5,
   TRIANGLE_WIDTH: 290,
   TRIANGLE_HEIGHT: 158,
-  INCIDENT_LENGTH: 112,
-  FRAME_CORNER_RADIUS: 6,
-  TITLE_LEFT: 10,
-  TITLE_TOP: 8,
-  ARROW_TAIL_WIDTH: 3,
-  ARROW_HEAD_WIDTH: 9,
-  ARROW_HEAD_HEIGHT: 10,
+  TRIANGLE_INCIDENT_LENGTH: 112,
+  TRIANGLE_FRAME_CORNER_RADIUS: 6,
+  TRIANGLE_TITLE_LEFT: 10,
+  TRIANGLE_TITLE_TOP: 8,
+  TRIANGLE_ARROW_TAIL_WIDTH: 3,
+  TRIANGLE_ARROW_HEAD_WIDTH: 9,
+  TRIANGLE_ARROW_HEAD_HEIGHT: 10,
+  SUMMARY_ENERGY_DIGITS: 3,
+  SUMMARY_WAVELENGTH_DIGITS: 4,
+  SUMMARY_SHIFT_DIGITS: 3,
 } as const;
 
-/** Settings for pair-production/view/PairBudgetNode.ts. Layout lengths are in px; counts and ratios are dimensionless. */
-export const PAIR_BUDGET_NODE_SETTINGS = {
-  PHOTON_ENERGY_VALUE_DIGITS: 4, // digits
-  PHOTON_MOMENTUM_VALUE_DIGITS: 4, // digits
-  CAPTION_DIGITS: 3, // digits
-
-  HEADING_MAX_WIDTH_OFFSET: 20, // px
-  TEXT_MAX_WIDTH_OFFSET: 16, // px
-  PLACE_RIGHT_OFFSET: 6, // px
-  REST_NEEDED_LINE_DASH_DASH: 4, // px
-  CONSTRUCTOR_REST_NEEDED_LINE_DASH_DASH: 3, // px
-  ENERGY_LEGEND_TOP_OFFSET: 16, // px
-  CAPTION_MAX_WIDTH_OFFSET: 28, // px
-  CONSTRUCTOR_LEFT_OFFSET: 5, // px
-  CONSTRUCTOR_TOP_OFFSET: 18, // px
-
-  BUDGET_WIDTH: 420,
-  BUDGET_HEIGHT: 246,
-  BAR_LEFT: 104,
-  BAR_WIDTH: 258,
-  BAR_HEIGHT: 16,
-  /** The bars are scaled so this much energy (keV) fills the width, until the photon needs more room. */
-  MINIMUM_FULL_SCALE_KEV: 4000,
-  /** A gap narrower than this is drawn this wide, so the momentum shortfall never vanishes from view. */
-  MINIMUM_GAP_PX: 2,
-  FRAME_CORNER_RADIUS: 6,
-  HEADING_LEFT: 10,
-  LEGEND_ITEM_SPACING: 4,
-  LEGEND_ITEM_WIDTH: 9,
-  LEGEND_ITEM_HEIGHT: 9,
-  LEGEND_ITEM_MAX_WIDTH: 104,
-  ENERGY_PHOTON_Y: 40,
-  ENERGY_PAIR_Y: 64,
-  REST_NEEDED_LABEL_MAX_WIDTH: 150,
-  ENERGY_LEGEND_SPACING: 12,
-  ENERGY_LEGEND_LEFT: 14,
-  MOMENTUM_TOP: 124,
-  CAPTION_LEFT: 14,
-} as const;
-
-/** Settings for pair-production/view/PairEventNode.ts. Layout lengths are in px; counts and ratios are dimensionless. */
-export const PAIR_EVENT_NODE_SETTINGS = {
-  STATUS_TEXT_MAX_WIDTH_OFFSET: 120, // px
-  CONSTRUCTOR_RIGHT_OFFSET: 10, // px
-  CONSTRUCTOR_TOP_OFFSET: 5, // px
-  FIELD_SYMBOL_BOTTOM_OFFSET: 8, // px
-  PLACE_FIELD_LABEL_LEFT_OFFSET: 5, // px
-  CONSTRUCTOR_BOTTOM_OFFSET: 12, // px
-
-  EVENT_WIDTH: 420,
-  EVENT_HEIGHT: 300,
-  VERTEX_X: 150,
-  VERTEX_Y: 160,
-  PHOTON_START_X: 12,
-  /** Fraction of the animation the photon spends arriving. */
-  ARRIVAL: 0.3,
-  /** Fraction of the animation the photon spends arriving. */
-  PIXELS_PER_MM: 8,
-  /** Fraction of the animation the photon spends arriving. */
-  STRAIGHT_TRACK_LENGTH: 230,
-  /** Fraction of the animation the photon spends arriving. */
-  MAX_TRACK_LENGTH: 420,
-  /** Fraction of the animation the photon spends arriving. */
-  TRACK_STEP: 1.5,
-  /** Fraction of the animation the photon spends arriving. */
-  PHOTON_WIGGLE_PX: 12,
-  FRAME_CORNER_RADIUS: 6,
-  TITLE_MAX_WIDTH: 90,
-  TITLE_LEFT: 10,
-  TITLE_TOP: 8,
-  TOP_TOP: 8,
-  NUCLEUS_RADIUS: 9,
-  FIELD_LABEL_MAX_WIDTH: 160,
-  FIELD_SYMBOL_LEFT: 10,
-  CENTER_X_CENTER_X: 40,
-  TRACK_LINE_WIDTH: 2.5,
-  CLIP_AREA_CORNER_X: 6,
-  CLIP_AREA_CORNER_Y: 6,
-} as const;
-
-/** Settings for pair-production/view/PairProductionScreenView.ts. Layout lengths are in px; counts and ratios are dimensionless. */
-export const PAIR_PRODUCTION_SCREEN_VIEW_SETTINGS = {
-  SPEED_DIGITS: 3, // digits
-  ELECTRON_KINETIC_FORMAT_ENERGY_DIGITS: 4, // digits
-  POSITRON_KINETIC_FORMAT_ENERGY_DIGITS: 4, // digits
-  NUCLEUS_MOMENTUM_FORMAT_ENERGY_DIGITS: 3, // digits
-  NUCLEUS_KINETIC_FORMAT_ENERGY_DIGITS: 3, // digits
-  READOUTS_DIGITS: 3, // digits
-
-  CONSTRUCTOR_TOP_OFFSET: 12, // px
-  CONSTRUCTOR_LEFT_OFFSET: 14, // px
-  CONSTRUCTOR_PHOTON_PANEL_SPACING: 5, // px
-  PHOTON_PANEL_MIN_WIDTH_OFFSET: 24, // px
-  SURROUNDINGS_PANEL_MIN_WIDTH_OFFSET: 24, // px
-  PAIR_PANEL_MIN_WIDTH_OFFSET: 24, // px
-
-  MIDDLE_WIDTH: 290,
-  PRESET_BUTTON_TEXT_WIDTH: 58,
-  READOUTS_SPACING: 5,
-  EQUATIONS_SPACING: 8,
-  /** Energy control decimal places (dimensionless). */
-  ENERGY_CONTROL_DECIMAL_PLACES: 2,
-  /** Energy control delta (dimensionless). */
-  ENERGY_CONTROL_DELTA: 0.01,
-  PHOTON_PANEL_SPACING: 8,
-  SURROUNDINGS_PANEL_SPACING: 8,
-  PAIR_PANEL_SPACING: 8,
-  RIGHT_COLUMN_SPACING: 10,
-} as const;
-
-/** Settings for preferences/PhotonInteractionsPreferencesNode.ts. Layout lengths are in px; counts and ratios are dimensionless. */
-export const PHOTON_INTERACTIONS_PREFERENCES_NODE_SETTINGS = {
-  HEADER_FONT_SIZE: 18,
-  SHOW_EQUATIONS_CHECKBOX_FONT_SIZE: 14,
-  SHOW_EQUATIONS_CHECKBOX_SPACING: 8,
-  CONSTRUCTOR_SPACING: 12,
-} as const;
-
-/** Settings for xray-tube/view/MoseleyChartNode.ts. Layout lengths are in px; counts and ratios are dimensionless. */
-export const MOSELEY_CHART_NODE_SETTINGS = {
-  LAW_LINE_DASH_DASH: 5, // px
-  CONSTRUCTOR_LAW_LINE_DASH_DASH: 4, // px
-  POINTS_TOP_OFFSET: 5, // px
-  CONSTRUCTOR_RADIUS: 5.5, // px
-  CONSTRUCTOR_MAX_WIDTH_OFFSET: 60, // px
-
-  WIDTH: 220,
-  HEIGHT: 120,
+/** X-ray tube screen layout: tube, spectrum, shell diagram, Moseley chart, controls. */
+export const XRAY_VIEW = {
+  MOSELEY_LAW_DASH: 5,
+  MOSELEY_LAW_GAP: 4,
+  MOSELEY_POINT_TOP_GAP: 5,
+  MOSELEY_SELECTED_RADIUS: 5.5,
+  MOSELEY_TITLE_WIDTH_PAD: 60,
+  MOSELEY_WIDTH: 220,
+  MOSELEY_HEIGHT: 120,
   Z_MAX: 80,
   ORDINATE_MAX: 4.5,
-  LAW_LINE_WIDTH: 1.5,
-  LAW_LABEL_MAX_WIDTH: 100,
-  LEFT_LEFT: 6,
-  TOP_TOP: 4,
-  DOT_RADIUS: 4,
-  CHILDREN_SPACING: 6,
-} as const;
-
-/** Settings for xray-tube/view/ShellDiagramNode.ts. Layout lengths are in px; counts and ratios are dimensionless. */
-export const SHELL_DIAGRAM_NODE_SETTINGS = {
-  SHELLS_ITEM_2_RADIUS: 34, // px
-  SHELLS_ITEM_3_RADIUS: 52, // px
-  RADIUS_TRANSITION_OFFSET_Y: -5, // px
-  RADIUS_TRANSITION_OFFSET_Y_SEGMENT_2: 5, // px
-
-  TITLE_MAX_WIDTH_OFFSET: 20, // px
-  TRANSITION_LEFT_OFFSET: 8, // px
-  TRANSITION_CENTER_Y_OFFSET: 34, // px
-  TRANSITION_CENTER_Y: 18, // px
-  CAPTION_LINE_WRAP: 130, // px
-  CONSTRUCTOR_LEFT_OFFSET: 8, // px
-  CONSTRUCTOR_TOP_OFFSET: 4, // px
-
+  MOSELEY_LAW_LINE_WIDTH: 1.5,
+  MOSELEY_LAW_LABEL_MAX_WIDTH: 100,
+  MOSELEY_LEFT_INSET: 6,
+  MOSELEY_TOP_INSET: 4,
+  MOSELEY_DOT_RADIUS: 4,
+  MOSELEY_CHILDREN_SPACING: 6,
+  L_SHELL_RADIUS: 34,
+  M_SHELL_RADIUS: 52,
+  KA_TRANSITION_Y_OFFSET: -5,
+  KB_TRANSITION_Y_OFFSET: 5,
+  SHELL_TITLE_WIDTH_INSET: 20,
+  TRANSITION_LABEL_LEFT_GAP: 8,
+  TRANSITION_BASE_Y_OFFSET: 34,
+  TRANSITION_EXTRA_Y: 18,
+  CAPTION_LINE_WRAP: 130,
+  SHELL_CAPTION_LEFT_GAP: 8,
+  SHELL_CAPTION_TOP_GAP: 4,
   SHELL_WIDTH: 290,
   SHELL_HEIGHT: 150,
   CENTER_X: 74,
   CENTER_Y: 92,
-  SHELLS_RADIUS: 16,
-  FRAME_CORNER_RADIUS: 6,
-  TITLE_LEFT: 10,
-  TITLE_TOP: 8,
+  K_SHELL_RADIUS: 16,
+  SHELL_FRAME_CORNER_RADIUS: 6,
+  SHELL_TITLE_LEFT: 10,
+  SHELL_TITLE_TOP: 8,
   NUCLEUS_RADIUS: 6,
-  DOT_RADIUS: 3,
-  CONSTRUCTOR_RADIUS: 3,
-  CONSTRUCTOR_LINE_WIDTH: 1.5,
-  ARROW_TAIL_WIDTH: 2,
-  ARROW_HEAD_WIDTH: 7,
-  ARROW_HEAD_HEIGHT: 7,
-} as const;
-
-/** Settings for xray-tube/view/XRaySpectrumChartNode.ts. Layout lengths are in px; counts and ratios are dimensionless. */
-export const X_RAY_SPECTRUM_CHART_NODE_SETTINGS = {
-  LIMIT_LINE_LINE_DASH_DASH: 5, // px
-  CONSTRUCTOR_LIMIT_LINE_LINE_DASH_DASH: 4, // px
-  CONSTRUCTOR_RIGHT_OFFSET: 3, // px
-  CONSTRUCTOR_LEFT_OFFSET: 6, // px
-  CONSTRUCTOR_BOTTOM_OFFSET: 6, // px
-  CONSTRUCTOR_BOTTOM: 11, // px
-  CONSTRUCTOR_MAX_WIDTH_OFFSET: 40, // px
-
-  WIDTH: 360,
-  HEIGHT: 210,
-  /** Most line labels any anode needs (tungsten: three K, three L). */
+  SHELL_ELECTRON_DOT_RADIUS: 3,
+  VACANCY_RADIUS: 3,
+  VACANCY_LINE_WIDTH: 1.5,
+  TRANSITION_ARROW_TAIL_WIDTH: 2,
+  TRANSITION_ARROW_HEAD_WIDTH: 7,
+  TRANSITION_ARROW_HEAD_HEIGHT: 7,
+  LIMIT_LINE_DASH: 5,
+  LIMIT_LINE_GAP: 4,
+  LIMIT_LINE_RIGHT_INSET: 3,
+  LIMIT_LABEL_LEFT_GAP: 6,
+  LIMIT_LABEL_BOTTOM_GAP: 6,
+  LINE_LABEL_BOTTOM: 11,
+  SPECTRUM_TITLE_WIDTH_PAD: 40,
+  SPECTRUM_WIDTH: 360,
+  SPECTRUM_HEIGHT: 210,
   MAX_LINE_LABELS: 6,
-  /** Chart range max (in the source module’s documented units). */
-  CHART_RANGE_MAX: 1.12,
-  CURVE_LINE_WIDTH: 2,
-  LIMIT_LINE_LINE_WIDTH: 1.5,
+  SPECTRUM_Y_RANGE_MAX: 1.12,
+  SPECTRUM_CURVE_LINE_WIDTH: 2,
+  LIMIT_LINE_WIDTH: 1.5,
   LIMIT_LABEL_MAX_WIDTH: 110,
-  /** Constructor range max (in the source module’s documented units). */
-  CONSTRUCTOR_RANGE_MAX: 1.12,
-  BOTTOM_BOTTOM: 4,
-  CHILDREN_SPACING: 6,
-} as const;
-
-/** Settings for xray-tube/view/XRayTubeNode.ts. Layout lengths are in px; counts and ratios are dimensionless. */
-export const X_RAY_TUBE_NODE_SETTINGS = {
-  PLACE_RIGHT_OFFSET: 4, // px
-  STEP_CENTER_Y_FACTOR: 7, // dimensionless
-
+  SPECTRUM_Y_RANGE_MAX_RESET: 1.12,
+  SPECTRUM_BOTTOM_INSET: 4,
+  SPECTRUM_CHILDREN_SPACING: 6,
+  TUBE_LABEL_RIGHT_GAP: 4,
+  ELECTRON_STEP_Y_DIVISOR: 7,
   TUBE_WIDTH: 420,
   TUBE_HEIGHT: 200,
   AXIS_Y: 78,
@@ -673,7 +425,7 @@ export const X_RAY_TUBE_NODE_SETTINGS = {
   ANODE_X: 318,
   ELECTRONS_PER_MA: 2,
   PHOTON_LENGTH: 92,
-  FRAME_CORNER_RADIUS: 6,
+  TUBE_FRAME_CORNER_RADIUS: 6,
   GLASS_X: 40,
   GLASS_Y: 32,
   GLASS_WIDTH: 340,
@@ -686,86 +438,197 @@ export const X_RAY_TUBE_NODE_SETTINGS = {
   CATHODE_LEAD_HEIGHT: 6,
   ANODE_LINE_WIDTH: 2,
   ANODE_LEAD_HEIGHT: 6,
-  TEXT_MAX_WIDTH: 90,
-  TOP_TOP: 8,
-  CONSTRUCTOR_RADIUS: 3,
-  CLIP_AREA_CORNER_X: 6,
-  CLIP_AREA_CORNER_Y: 6,
-} as const;
-
-/** Settings for xray-tube/view/XRayTubeScreenView.ts. Layout lengths are in px; counts and ratios are dimensionless. */
-export const X_RAY_TUBE_SCREEN_VIEW_SETTINGS = {
-  READOUTS_DIGITS: 4, // digits
-  READOUTS_DIGITS_SEGMENT_2: 3, // digits
-  K_EDGE_KE_V_FORMAT_ENERGY_DIGITS: 4, // digits
-
-  CONSTRUCTOR_LEFT_OFFSET: 4, // px
-  CONSTRUCTOR_TOP_OFFSET: 12, // px
-  CONSTRUCTOR_TUBE_PANEL_SPACING: 6, // px
-  TUBE_PANEL_MIN_WIDTH_OFFSET: 24, // px
-  ANODE_PANEL_MIN_WIDTH_OFFSET: 24, // px
-  GRAPH_PANEL_MIN_WIDTH_OFFSET: 24, // px
-
+  TUBE_LABEL_MAX_WIDTH: 90,
+  TUBE_LABEL_TOP: 8,
+  ELECTRON_DOT_RADIUS: 3,
+  TUBE_CLIP_CORNER_X: 6,
+  TUBE_CLIP_CORNER_Y: 6,
+  READOUT_DIGITS: 4,
+  BETA_DIGITS: 3,
+  K_EDGE_DIGITS: 4,
+  CONTENT_LEFT_INSET: 4,
+  CONTENT_TOP_GAP: 12,
+  TUBE_PRESET_SPACING: 6,
+  TUBE_PANEL_WIDTH_PAD: 24,
+  ANODE_PANEL_WIDTH_PAD: 24,
+  GRAPH_PANEL_WIDTH_PAD: 24,
   PRESET_BUTTON_TEXT_WIDTH: 92,
   READOUTS_SPACING: 5,
   TUBE_PANEL_SPACING: 8,
   ANODE_PANEL_SPACING: 8,
   GRAPH_PANEL_SPACING: 8,
   RIGHT_COLUMN_SPACING: 8,
+  SUMMARY_WAVELENGTH_DIGITS: 3,
+  SUMMARY_ENERGY_DIGITS: 3,
 } as const;
 
-/** Numerical settings; units are specified per value. */
-export const COMPTON_NUMERICS = {
-  /** Maximum attempts for sampling a scattered direction (count). */
-  MAX_REJECTION_ATTEMPTS: 1000,
-  /** Integration samples per detector-spectrum bin (count). */
-  CONTINUUM_SAMPLES_PER_BIN: 20,
-  /** Minimum broadening width in detector bins. */
-  MIN_SIGMA_BINS: 1e-9,
-  /** Detector convolution support in standard deviations. */
-  BROADENING_SIGMA_REACH: 4,
-  /** Schematic broadening of the shifted spectrometer line (dimensionless). */
-  SCATTERED_LINE_WIDTH_FACTOR: 1.5,
+/** Pair-production screen layout: event stage, energy/momentum budget, controls. */
+export const PAIR_VIEW = {
+  BUDGET_PHOTON_ENERGY_DIGITS: 4,
+  BUDGET_PHOTON_MOMENTUM_DIGITS: 4,
+  BUDGET_CAPTION_DIGITS: 3,
+  BUDGET_HEADING_WIDTH_INSET: 20,
+  BUDGET_LABEL_WIDTH_INSET: 16,
+  BUDGET_LABEL_RIGHT_GAP: 6,
+  REST_NEEDED_DASH: 4,
+  REST_NEEDED_GAP: 3,
+  ENERGY_LEGEND_TOP_GAP: 16,
+  BUDGET_CAPTION_WIDTH_INSET: 28,
+  BUDGET_VALUE_LEFT_GAP: 5,
+  BUDGET_CAPTION_TOP_GAP: 18,
+  BUDGET_WIDTH: 420,
+  BUDGET_HEIGHT: 246,
+  BAR_LEFT: 104,
+  BAR_WIDTH: 258,
+  BAR_HEIGHT: 16,
+  MINIMUM_FULL_SCALE_KEV: 4000,
+  MINIMUM_GAP_PX: 2,
+  BUDGET_FRAME_CORNER_RADIUS: 6,
+  HEADING_LEFT: 10,
+  LEGEND_ITEM_SPACING: 4,
+  LEGEND_ITEM_WIDTH: 9,
+  LEGEND_ITEM_HEIGHT: 9,
+  LEGEND_ITEM_MAX_WIDTH: 104,
+  ENERGY_PHOTON_Y: 40,
+  ENERGY_PAIR_Y: 64,
+  REST_NEEDED_LABEL_MAX_WIDTH: 150,
+  ENERGY_LEGEND_SPACING: 12,
+  ENERGY_LEGEND_LEFT: 14,
+  MOMENTUM_TOP: 124,
+  CAPTION_LEFT: 14,
+  STATUS_WIDTH_INSET: 120,
+  STATUS_RIGHT_INSET: 10,
+  NUCLEUS_LABEL_TOP_GAP: 5,
+  FIELD_SYMBOL_BOTTOM_GAP: 8,
+  FIELD_LABEL_LEFT_GAP: 5,
+  PHOTON_LABEL_BOTTOM_GAP: 12,
+  EVENT_WIDTH: 420,
+  EVENT_HEIGHT: 300,
+  VERTEX_X: 150,
+  VERTEX_Y: 160,
+  PHOTON_START_X: 12,
+  ARRIVAL_FRACTION: 0.3,
+  PIXELS_PER_MM: 8,
+  STRAIGHT_TRACK_LENGTH: 230,
+  MAX_TRACK_LENGTH: 420,
+  TRACK_STEP: 1.5,
+  PHOTON_WIGGLE_PX: 12,
+  EVENT_FRAME_CORNER_RADIUS: 6,
+  TITLE_MAX_WIDTH: 90,
+  TITLE_LEFT: 10,
+  TITLE_TOP: 8,
+  STATUS_TOP: 8,
+  NUCLEUS_RADIUS: 9,
+  FIELD_LABEL_MAX_WIDTH: 160,
+  FIELD_SYMBOL_LEFT: 10,
+  FIELD_SYMBOL_CENTER_NUDGE: 40,
+  TRACK_LINE_WIDTH: 2.5,
+  EVENT_CLIP_CORNER_X: 6,
+  EVENT_CLIP_CORNER_Y: 6,
+  SPEED_DIGITS: 3,
+  ELECTRON_KINETIC_DIGITS: 4,
+  POSITRON_KINETIC_DIGITS: 4,
+  NUCLEUS_MOMENTUM_DIGITS: 3,
+  NUCLEUS_KINETIC_DIGITS: 3,
+  SHORTFALL_DIGITS: 3,
+  BUDGET_TOP_GAP: 12,
+  READOUTS_LEFT_GAP: 14,
+  PHOTON_PRESET_SPACING: 5,
+  PHOTON_PANEL_WIDTH_PAD: 24,
+  SURROUNDINGS_PANEL_WIDTH_PAD: 24,
+  PAIR_PANEL_WIDTH_PAD: 24,
+  MIDDLE_WIDTH: 290,
+  PRESET_BUTTON_TEXT_WIDTH: 58,
+  READOUTS_SPACING: 5,
+  EQUATIONS_SPACING: 8,
+  ENERGY_CONTROL_DECIMAL_PLACES: 2,
+  ENERGY_CONTROL_DELTA: 0.01,
+  PHOTON_PANEL_SPACING: 8,
+  SURROUNDINGS_PANEL_SPACING: 8,
+  PAIR_PANEL_SPACING: 8,
+  RIGHT_COLUMN_SPACING: 10,
+  SUMMARY_PHOTON_DIGITS: 3,
+  SUMMARY_ELECTRON_DIGITS: 3,
+  SUMMARY_POSITRON_DIGITS: 3,
+  SUMMARY_NUCLEUS_MOMENTUM_DIGITS: 3,
+  SUMMARY_NUCLEUS_KINETIC_DIGITS: 3,
 } as const;
 
-/** Numerical settings; units are specified per value. */
-export const PAIR_NUMERICS = {
-  /** Iterations used to solve the recoil energy (count). */
-  RECOIL_ITERATIONS: 6,
-} as const;
-
-/** Numerical settings; units are specified per value. */
-export const XRAY_NUMERICS = {
-  /** Gaussian line cutoff in standard deviations. */
-  LINE_SIGMA_CUTOFF: 6,
-} as const;
-
-/** Component dimensions in px; ratios and control steps are dimensionless; precision counts digits. */
-export const X_RAY_TUBE_SCREEN_SUMMARY_CONTENT_SETTINGS = {
-  VALUE_FORMAT_WAVELENGTH_DIGITS: 3, // digits
-  VALUE_FORMAT_ENERGY_DIGITS: 3, // digits
-} as const;
-
-/** Component dimensions in px; ratios and control steps are dimensionless; precision counts digits. */
-export const PAIR_PRODUCTION_SCREEN_SUMMARY_CONTENT_SETTINGS = {
-  VALUE_FORMAT_ENERGY_DIGITS: 3, // digits
-  ELECTRON_KINETIC_FORMAT_ENERGY_DIGITS: 3, // digits
-  POSITRON_KINETIC_FORMAT_ENERGY_DIGITS: 3, // digits
-  NUCLEUS_MOMENTUM_FORMAT_ENERGY_DIGITS: 3, // digits
-  NUCLEUS_KINETIC_FORMAT_ENERGY_DIGITS: 3, // digits
-} as const;
-
-/** Component dimensions in px; ratios and control steps are dimensionless; precision counts digits. */
-export const COMPTON_SCREEN_SUMMARY_CONTENT_SETTINGS = {
-  VALUE_FORMAT_ENERGY_DIGITS: 3, // digits
-  VALUE_FORMAT_WAVELENGTH_DIGITS: 4, // digits
-  VALUE_FORMAT_WAVELENGTH_DIGITS_SEGMENT_2: 3, // digits
-} as const;
-
-/** Component dimensions in px; ratios and control steps are dimensionless; precision counts digits. */
-export const ANNIHILATION_SCREEN_SUMMARY_CONTENT_SETTINGS = {
-  CURRENT_DETAILS_PROPERTY_DIGITS: 3, // digits
-  ENERGY_FORMAT_ENERGY_DIGITS: 3, // digits
+/** Annihilation screen layout: event stage, PET ring, controls. */
+export const ANNIHILATION_VIEW = {
+  ELECTRON_X_OFFSET: 8,
+  POSITRON_X_OFFSET: -8,
+  EVENT_ENERGY_DIGITS: 4,
+  EVENT_PX_DIGITS: 4,
+  VERDICT_DIGITS: 4,
+  EVENT_TITLE_WIDTH_INSET: 20,
+  EVENT_AXIS_DASH: 4,
+  BAR_LABEL_WIDTH_INSET: 18,
+  BAR_LABEL_RIGHT_GAP: 6,
+  VERDICT_WIDTH_INSET: 28,
+  ONE_PHOTON_WIDTH_INSET: 20,
+  ELECTRON_LABEL_RIGHT_GAP: 4,
+  ELECTRON_LABEL_TOP_GAP: 12,
+  POSITRON_LABEL_CENTER_NUDGE: 6,
+  POSITRON_LABEL_BOTTOM_GAP: 10,
+  BAR_VALUE_LEFT_GAP: 5,
+  EVENT_WIDTH: 420,
+  EVENT_HEIGHT: 300,
+  VERTEX_X: 190,
+  VERTEX_Y: 128,
+  PHOTON_MIN_LENGTH: 26,
+  PHOTON_LENGTH_RANGE: 110,
+  REST_WIGGLE_PX: 13,
+  POSITRON_MIN_LENGTH: 34,
+  POSITRON_LENGTH_RANGE: 110,
+  BAR_LEFT: 150,
+  BAR_WIDTH: 250,
+  BAR_HEIGHT: 12,
+  EVENT_FRAME_CORNER_RADIUS: 6,
+  EVENT_TITLE_LEFT: 10,
+  EVENT_TITLE_TOP: 8,
+  AXIS_START_X: 12,
+  ELECTRON_RADIUS: 7,
+  POSITRON_RADIUS: 7,
+  POSITRON_ARROW_TAIL_WIDTH: 3,
+  POSITRON_ARROW_HEAD_WIDTH: 10,
+  POSITRON_ARROW_HEAD_HEIGHT: 11,
+  NEEDS_Y: 232,
+  HAS_Y: 254,
+  VERDICT_LEFT: 14,
+  ONE_PHOTON_LAYER_LEFT: 10,
+  ONE_PHOTON_LAYER_TOP: 202,
+  EVENT_CLIP_CORNER_X: 6,
+  EVENT_CLIP_CORNER_Y: 6,
+  PHOTON_ENERGY_DIGITS: 4,
+  PHOTON_WAVELENGTH_DIGITS: 4,
+  RING_CENTER_X_OFFSET: 30,
+  RING_CENTER_Y_OFFSET: 16,
+  RING_TITLE_LEFT_GAP: 30,
+  RING_TITLE_TOP_GAP: 20,
+  POSITRON_PANEL_WIDTH_PAD: 24,
+  PHOTONS_PANEL_WIDTH_PAD: 24,
+  SCANNER_PANEL_WIDTH_PAD: 24,
+  MIDDLE_WIDTH: 290,
+  RING_TITLE_MAX_WIDTH: 150,
+  COUNT_TEXT_MAX_WIDTH: 170,
+  READOUTS_SPACING: 5,
+  EQUATIONS_SPACING: 8,
+  KINETIC_CONTROL_DECIMAL_PLACES: 2,
+  KINETIC_CONTROL_DELTA: 0.01,
+  POSITRON_PANEL_SPACING: 8,
+  PHOTONS_PANEL_SPACING: 8,
+  SCANNER_PANEL_SPACING: 8,
+  RIGHT_COLUMN_SPACING: 10,
+  TRACER_TOUCH_DILATION: 10,
+  RING_RADIUS_PX: 104,
+  DETECTOR_DEPTH: 12,
+  TRACER_RADIUS: 8,
+  KEYBOARD_STEP_CM: 2,
+  LOR_OPACITY: 0.45,
+  LATEST_LOR_LINE_WIDTH: 2,
+  SUMMARY_KINETIC_DIGITS: 3,
+  SUMMARY_PHOTON_DIGITS: 3,
 } as const;
 
 PhotonInteractionsNamespace.register("PhotonInteractionsConstants", {
@@ -779,4 +642,14 @@ PhotonInteractionsNamespace.register("PhotonInteractionsConstants", {
   XRAY,
   PAIR,
   ANNIHILATION,
+  PANEL,
+  CHART,
+  CONTROLS,
+  PREFERENCES,
+  SCREEN_ICONS,
+  PHOTON_ARROW,
+  COMPTON_VIEW,
+  XRAY_VIEW,
+  PAIR_VIEW,
+  ANNIHILATION_VIEW,
 });

@@ -1,4 +1,3 @@
-import { X_RAY_TUBE_SCREEN_VIEW_SETTINGS } from "../../PhotonInteractionsConstants.js";
 /**
  * XRayTubeScreenView.ts
  *
@@ -31,7 +30,7 @@ import {
 import { EquationNode } from "../../common/view/EquationNode.js";
 import { StringManager } from "../../i18n/StringManager.js";
 import PhotonInteractionsColors from "../../PhotonInteractionsColors.js";
-import { CONTROL_WIDTH, SCREEN_VIEW_MARGIN, XRAY } from "../../PhotonInteractionsConstants.js";
+import { CONTROL_WIDTH, SCREEN_VIEW_MARGIN, XRAY, XRAY_VIEW } from "../../PhotonInteractionsConstants.js";
 import type { XRayTubeModel } from "../model/XRayTubeModel.js";
 import { XRAY_TARGETS, type XRayTargetId } from "../model/xrayTargets.js";
 import { MoseleyChartNode } from "./MoseleyChartNode.js";
@@ -43,7 +42,7 @@ import { XRayTubeScreenSummaryContent } from "./XRayTubeScreenSummaryContent.js"
 export type XRayTubeScreenViewOptions = ScreenViewOptions;
 
 const READOUT_WIDTH = SHELL_WIDTH - 24;
-const PRESET_BUTTON_TEXT_WIDTH: number = X_RAY_TUBE_SCREEN_VIEW_SETTINGS.PRESET_BUTTON_TEXT_WIDTH;
+const PRESET_BUTTON_TEXT_WIDTH: number = XRAY_VIEW.PRESET_BUTTON_TEXT_WIDTH;
 
 export class XRayTubeScreenView extends ScreenView {
   private readonly tube: XRayTubeNode;
@@ -71,8 +70,8 @@ export class XRayTubeScreenView extends ScreenView {
     this.tube.top = bounds.minY + SCREEN_VIEW_MARGIN;
 
     const spectrum = new XRaySpectrumChartNode(model);
-    spectrum.left = this.tube.left + X_RAY_TUBE_SCREEN_VIEW_SETTINGS.CONSTRUCTOR_LEFT_OFFSET;
-    spectrum.top = this.tube.bottom + X_RAY_TUBE_SCREEN_VIEW_SETTINGS.CONSTRUCTOR_TOP_OFFSET;
+    spectrum.left = this.tube.left + XRAY_VIEW.CONTENT_LEFT_INSET;
+    spectrum.top = this.tube.bottom + XRAY_VIEW.CONTENT_TOP_GAP;
 
     // ── Middle: shells, limits, equation, Moseley plot ──────────────────────────
     const shells = new ShellDiagramNode(model);
@@ -90,22 +89,20 @@ export class XRayTubeScreenView extends ScreenView {
     const readouts = new PhotonInteractionsPanel(
       new VBox({
         align: "left",
-        spacing: X_RAY_TUBE_SCREEN_VIEW_SETTINGS.READOUTS_SPACING,
+        spacing: XRAY_VIEW.READOUTS_SPACING,
         children: [
           createSectionHeader(strings.readoutsHeadingStringProperty),
           createReadoutRow(
             strings.minimumWavelengthStringProperty,
             new DerivedProperty([model.minimumWavelengthProperty], (wavelength) =>
-              formatWavelength(wavelength, X_RAY_TUBE_SCREEN_VIEW_SETTINGS.READOUTS_DIGITS),
+              formatWavelength(wavelength, XRAY_VIEW.READOUT_DIGITS),
             ),
             PhotonInteractionsColors.limitColorProperty,
             READOUT_WIDTH,
           ),
           createReadoutRow(
             strings.maximumEnergyStringProperty,
-            new DerivedProperty([model.voltageProperty], (voltage) =>
-              formatEnergy(voltage, X_RAY_TUBE_SCREEN_VIEW_SETTINGS.READOUTS_DIGITS),
-            ),
+            new DerivedProperty([model.voltageProperty], (voltage) => formatEnergy(voltage, XRAY_VIEW.READOUT_DIGITS)),
             PhotonInteractionsColors.limitColorProperty,
             READOUT_WIDTH,
           ),
@@ -113,7 +110,7 @@ export class XRayTubeScreenView extends ScreenView {
             strings.electronSpeedStringProperty,
             new DerivedProperty([model.electronBetaProperty, common.speedPatternStringProperty], (beta, pattern) =>
               StringUtils.fillIn(pattern, {
-                value: formatSignificant(beta, X_RAY_TUBE_SCREEN_VIEW_SETTINGS.READOUTS_DIGITS_SEGMENT_2),
+                value: formatSignificant(beta, XRAY_VIEW.BETA_DIGITS),
               }),
             ),
             PhotonInteractionsColors.electronColorProperty,
@@ -122,7 +119,7 @@ export class XRayTubeScreenView extends ScreenView {
           createReadoutRow(
             strings.kEdgeStringProperty,
             new DerivedProperty([model.targetProperty], (target) =>
-              formatEnergy(target.kEdgeKeV, X_RAY_TUBE_SCREEN_VIEW_SETTINGS.K_EDGE_KE_V_FORMAT_ENERGY_DIGITS),
+              formatEnergy(target.kEdgeKeV, XRAY_VIEW.K_EDGE_DIGITS),
             ),
             PhotonInteractionsColors.textColorProperty,
             READOUT_WIDTH,
@@ -149,10 +146,10 @@ export class XRayTubeScreenView extends ScreenView {
       SHELL_WIDTH,
     );
     equation.left = shells.left;
-    equation.top = readouts.bottom + X_RAY_TUBE_SCREEN_VIEW_SETTINGS.CONSTRUCTOR_TOP_OFFSET;
+    equation.top = readouts.bottom + XRAY_VIEW.CONTENT_TOP_GAP;
 
     const moseley = new MoseleyChartNode(model);
-    moseley.left = shells.left + X_RAY_TUBE_SCREEN_VIEW_SETTINGS.CONSTRUCTOR_LEFT_OFFSET;
+    moseley.left = shells.left + XRAY_VIEW.CONTENT_LEFT_INSET;
     moseley.top = equation.top + 34;
 
     // ── Right: controls ─────────────────────────────────────────────────────────
@@ -194,18 +191,18 @@ export class XRayTubeScreenView extends ScreenView {
     const tubePanel = new PhotonInteractionsPanel(
       new VBox({
         align: "left",
-        spacing: X_RAY_TUBE_SCREEN_VIEW_SETTINGS.TUBE_PANEL_SPACING,
+        spacing: XRAY_VIEW.TUBE_PANEL_SPACING,
         children: [
           createSectionHeader(strings.tubeHeadingStringProperty),
           voltageControl,
           currentControl,
           new HBox({
-            spacing: X_RAY_TUBE_SCREEN_VIEW_SETTINGS.CONSTRUCTOR_TUBE_PANEL_SPACING,
+            spacing: XRAY_VIEW.TUBE_PRESET_SPACING,
             children: presetButtons,
           }),
         ],
       }),
-      { minWidth: CONTROL_WIDTH + X_RAY_TUBE_SCREEN_VIEW_SETTINGS.TUBE_PANEL_MIN_WIDTH_OFFSET },
+      { minWidth: CONTROL_WIDTH + XRAY_VIEW.TUBE_PANEL_WIDTH_PAD },
     );
 
     const anodeRadio = createRadioButtonGroup(
@@ -220,10 +217,10 @@ export class XRayTubeScreenView extends ScreenView {
     const anodePanel = new PhotonInteractionsPanel(
       new VBox({
         align: "left",
-        spacing: X_RAY_TUBE_SCREEN_VIEW_SETTINGS.ANODE_PANEL_SPACING,
+        spacing: XRAY_VIEW.ANODE_PANEL_SPACING,
         children: [createSectionHeader(strings.anodeHeadingStringProperty), anodeRadio],
       }),
-      { minWidth: CONTROL_WIDTH + X_RAY_TUBE_SCREEN_VIEW_SETTINGS.ANODE_PANEL_MIN_WIDTH_OFFSET },
+      { minWidth: CONTROL_WIDTH + XRAY_VIEW.ANODE_PANEL_WIDTH_PAD },
     );
 
     const axisRadio = createRadioButtonGroup(
@@ -250,14 +247,14 @@ export class XRayTubeScreenView extends ScreenView {
     const graphPanel = new PhotonInteractionsPanel(
       new VBox({
         align: "left",
-        spacing: X_RAY_TUBE_SCREEN_VIEW_SETTINGS.GRAPH_PANEL_SPACING,
+        spacing: XRAY_VIEW.GRAPH_PANEL_SPACING,
         children: [createSectionHeader(strings.graphHeadingStringProperty), axisRadio, moseleyCheckbox],
       }),
-      { minWidth: CONTROL_WIDTH + X_RAY_TUBE_SCREEN_VIEW_SETTINGS.GRAPH_PANEL_MIN_WIDTH_OFFSET },
+      { minWidth: CONTROL_WIDTH + XRAY_VIEW.GRAPH_PANEL_WIDTH_PAD },
     );
 
     const rightColumn = new VBox({
-      spacing: X_RAY_TUBE_SCREEN_VIEW_SETTINGS.RIGHT_COLUMN_SPACING,
+      spacing: XRAY_VIEW.RIGHT_COLUMN_SPACING,
       align: "right",
       children: [tubePanel, anodePanel, graphPanel],
     });

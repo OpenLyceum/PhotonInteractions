@@ -1,4 +1,3 @@
-import { PET_RING_NODE_SETTINGS } from "../../PhotonInteractionsConstants.js";
 /**
  * PetRingNode.ts
  *
@@ -19,15 +18,15 @@ import { Circle, InteractiveHighlighting, Node, Path, Rectangle, RichDragListene
 import { formatTickValue } from "../../common/view/chartUtils.js";
 import { StringManager } from "../../i18n/StringManager.js";
 import PhotonInteractionsColors from "../../PhotonInteractionsColors.js";
-import { ANNIHILATION } from "../../PhotonInteractionsConstants.js";
+import { ANNIHILATION, ANNIHILATION_VIEW } from "../../PhotonInteractionsConstants.js";
 import type { AnnihilationModel } from "../model/AnnihilationModel.js";
 import { detectorPosition } from "../model/petRing.js";
 
 /** Ring radius on screen, px. */
-export const RING_RADIUS_PX: number = PET_RING_NODE_SETTINGS.RING_RADIUS_PX;
-const DETECTOR_DEPTH: number = PET_RING_NODE_SETTINGS.DETECTOR_DEPTH;
-const TRACER_RADIUS: number = PET_RING_NODE_SETTINGS.TRACER_RADIUS;
-const KEYBOARD_STEP_CM: number = PET_RING_NODE_SETTINGS.KEYBOARD_STEP_CM;
+export const RING_RADIUS_PX: number = ANNIHILATION_VIEW.RING_RADIUS_PX;
+const DETECTOR_DEPTH: number = ANNIHILATION_VIEW.DETECTOR_DEPTH;
+const TRACER_RADIUS: number = ANNIHILATION_VIEW.TRACER_RADIUS;
+const KEYBOARD_STEP_CM: number = ANNIHILATION_VIEW.KEYBOARD_STEP_CM;
 
 class Handle extends InteractiveHighlighting(Circle) {}
 
@@ -70,11 +69,11 @@ export class PetRingNode extends Node {
     const lines = new Path(null, {
       stroke: PhotonInteractionsColors.photonColorProperty,
       lineWidth: 1,
-      opacity: PET_RING_NODE_SETTINGS.LINES_OPACITY,
+      opacity: ANNIHILATION_VIEW.LOR_OPACITY,
     });
     const latest = new Path(null, {
       stroke: PhotonInteractionsColors.scatteredPhotonColorProperty,
-      lineWidth: PET_RING_NODE_SETTINGS.LATEST_LINE_WIDTH,
+      lineWidth: ANNIHILATION_VIEW.LATEST_LOR_LINE_WIDTH,
     });
 
     const tracer = new Handle(TRACER_RADIUS, {
@@ -88,7 +87,7 @@ export class PetRingNode extends Node {
       accessibleHelpText: a11y.tracerHelpStringProperty,
       visibleProperty: model.showTracerProperty,
     });
-    tracer.touchArea = tracer.localBounds.dilated(PET_RING_NODE_SETTINGS.TRACER_DILATION);
+    tracer.touchArea = tracer.localBounds.dilated(ANNIHILATION_VIEW.TRACER_TOUCH_DILATION);
     this.tracer = tracer;
 
     const clampToDisk = (position: Vector2): Vector2 =>

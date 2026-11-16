@@ -1,4 +1,3 @@
-import { X_RAY_SPECTRUM_CHART_NODE_SETTINGS } from "../../PhotonInteractionsConstants.js";
 /**
  * XRaySpectrumChartNode.ts
  *
@@ -20,14 +19,14 @@ import { wavelengthOfEnergy } from "../../common/model/fourMomentum.js";
 import { ChartFrameNode } from "../../common/view/ChartFrameNode.js";
 import { StringManager } from "../../i18n/StringManager.js";
 import PhotonInteractionsColors from "../../PhotonInteractionsColors.js";
-import { FONTS, XRAY } from "../../PhotonInteractionsConstants.js";
+import { FONTS, XRAY, XRAY_VIEW } from "../../PhotonInteractionsConstants.js";
 import type { XRayTubeModel } from "../model/XRayTubeModel.js";
 import { spectrumPerEnergy, spectrumPerWavelength } from "../model/xraySpectrum.js";
 
-const WIDTH: number = X_RAY_SPECTRUM_CHART_NODE_SETTINGS.WIDTH;
-const HEIGHT: number = X_RAY_SPECTRUM_CHART_NODE_SETTINGS.HEIGHT;
+const WIDTH: number = XRAY_VIEW.SPECTRUM_WIDTH;
+const HEIGHT: number = XRAY_VIEW.SPECTRUM_HEIGHT;
 /** Most line labels any anode needs (tungsten: three K, three L). */
-const MAX_LINE_LABELS: number = X_RAY_SPECTRUM_CHART_NODE_SETTINGS.MAX_LINE_LABELS;
+const MAX_LINE_LABELS: number = XRAY_VIEW.MAX_LINE_LABELS;
 /** Extra sample points laid across each line, in units of its width, so no peak is missed. */
 const LINE_SAMPLE_OFFSETS = [-4, -3, -2.5, -2, -1.5, -1, -0.5, 0, 0.5, 1, 1.5, 2, 2.5, 3, 4];
 
@@ -45,7 +44,7 @@ export class XRaySpectrumChartNode extends Node {
       viewWidth: WIDTH,
       viewHeight: HEIGHT,
       xRange: new Range(0, 1),
-      yRange: new Range(0, X_RAY_SPECTRUM_CHART_NODE_SETTINGS.CHART_RANGE_MAX),
+      yRange: new Range(0, XRAY_VIEW.SPECTRUM_Y_RANGE_MAX),
       xAxisLabelProperty,
       yAxisLabelProperty: strings.intensityAxisStringProperty,
       targetDivisions: 6,
@@ -53,21 +52,18 @@ export class XRaySpectrumChartNode extends Node {
     const transform = chart.chartTransform;
     const curve = new LinePlot(transform, [], {
       stroke: PhotonInteractionsColors.photonColorProperty,
-      lineWidth: X_RAY_SPECTRUM_CHART_NODE_SETTINGS.CURVE_LINE_WIDTH,
+      lineWidth: XRAY_VIEW.SPECTRUM_CURVE_LINE_WIDTH,
     });
     const limitLine = new Line(0, 0, 0, HEIGHT, {
       stroke: PhotonInteractionsColors.limitColorProperty,
-      lineWidth: X_RAY_SPECTRUM_CHART_NODE_SETTINGS.LIMIT_LINE_LINE_WIDTH,
-      lineDash: [
-        X_RAY_SPECTRUM_CHART_NODE_SETTINGS.LIMIT_LINE_LINE_DASH_DASH,
-        X_RAY_SPECTRUM_CHART_NODE_SETTINGS.CONSTRUCTOR_LIMIT_LINE_LINE_DASH_DASH,
-      ],
+      lineWidth: XRAY_VIEW.LIMIT_LINE_WIDTH,
+      lineDash: [XRAY_VIEW.LIMIT_LINE_DASH, XRAY_VIEW.LIMIT_LINE_GAP],
     });
     chart.plotLayer.children = [limitLine, curve];
     const limitLabel = new RichText("", {
       font: FONTS.TICK_LABEL,
       fill: PhotonInteractionsColors.limitColorProperty,
-      maxWidth: X_RAY_SPECTRUM_CHART_NODE_SETTINGS.LIMIT_LABEL_MAX_WIDTH,
+      maxWidth: XRAY_VIEW.LIMIT_LABEL_MAX_WIDTH,
     });
     const lineLabels: Text[] = [];
     for (let i = 0; i < MAX_LINE_LABELS; i++) {
@@ -116,7 +112,7 @@ export class XRaySpectrumChartNode extends Node {
         const raw = xs.map((x) => intensityAt(x));
         const peak = Math.max(...raw, 1e-30);
         const scale = current / XRAY.CURRENT_MAX_MA / peak;
-        chart.setRanges(new Range(0, xMax), new Range(0, X_RAY_SPECTRUM_CHART_NODE_SETTINGS.CONSTRUCTOR_RANGE_MAX));
+        chart.setRanges(new Range(0, xMax), new Range(0, XRAY_VIEW.SPECTRUM_Y_RANGE_MAX_RESET));
         curve.setDataSet(xs.map((x, i) => new Vector2(x, (raw[i] ?? 0) * scale)));
 
         limitLine.x = transform.modelToViewX(limitX);
@@ -125,14 +121,11 @@ export class XRaySpectrumChartNode extends Node {
         limitLabel.visible = limitLine.visible;
         // Beside the cutoff, on the empty side: left of it against wavelength if there is room.
         if (againstEnergy) {
-          limitLabel.right = Math.min(
-            WIDTH - X_RAY_SPECTRUM_CHART_NODE_SETTINGS.CONSTRUCTOR_RIGHT_OFFSET,
-            limitLine.x + limitLabel.width + 6,
-          );
+          limitLabel.right = Math.min(WIDTH - XRAY_VIEW.LIMIT_LINE_RIGHT_INSET, limitLine.x + limitLabel.width + 6);
         } else {
-          limitLabel.left = limitLine.x + X_RAY_SPECTRUM_CHART_NODE_SETTINGS.CONSTRUCTOR_LEFT_OFFSET;
+          limitLabel.left = limitLine.x + XRAY_VIEW.LIMIT_LABEL_LEFT_GAP;
         }
-        limitLabel.bottom = HEIGHT - X_RAY_SPECTRUM_CHART_NODE_SETTINGS.CONSTRUCTOR_BOTTOM_OFFSET;
+        limitLabel.bottom = HEIGHT - XRAY_VIEW.LIMIT_LABEL_BOTTOM_GAP;
 
         // Each label sits just above its peak, and is raised until it clears the labels already placed
         // (tungsten's Kα₁ and Kα₂ are a few pixels apart).
@@ -147,12 +140,9 @@ export class XRaySpectrumChartNode extends Node {
               label.width / 2 + 2,
               Math.min(WIDTH - label.width / 2 - 2, transform.modelToViewX(x)),
             );
-            label.bottom = Math.max(
-              X_RAY_SPECTRUM_CHART_NODE_SETTINGS.CONSTRUCTOR_BOTTOM,
-              transform.modelToViewY(intensityAt(x) * scale) - 3,
-            );
+            label.bottom = Math.max(XRAY_VIEW.LINE_LABEL_BOTTOM, transform.modelToViewY(intensityAt(x) * scale) - 3);
             while (label.top > 0 && placed.some((other) => other.bounds.dilated(1).intersectsBounds(label.bounds))) {
-              label.bottom -= X_RAY_SPECTRUM_CHART_NODE_SETTINGS.BOTTOM_BOTTOM;
+              label.bottom -= XRAY_VIEW.SPECTRUM_BOTTOM_INSET;
             }
             placed.push(label);
           }
@@ -163,12 +153,12 @@ export class XRaySpectrumChartNode extends Node {
     this.children = [
       new VBox({
         align: "left",
-        spacing: X_RAY_SPECTRUM_CHART_NODE_SETTINGS.CHILDREN_SPACING,
+        spacing: XRAY_VIEW.SPECTRUM_CHILDREN_SPACING,
         children: [
           new Text(strings.spectrumTitleStringProperty, {
             font: FONTS.CHART_TITLE,
             fill: PhotonInteractionsColors.textColorProperty,
-            maxWidth: WIDTH + X_RAY_SPECTRUM_CHART_NODE_SETTINGS.CONSTRUCTOR_MAX_WIDTH_OFFSET,
+            maxWidth: WIDTH + XRAY_VIEW.SPECTRUM_TITLE_WIDTH_PAD,
           }),
           chart,
         ],

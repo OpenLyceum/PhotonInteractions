@@ -1,4 +1,3 @@
-import { COMPTON_SCREEN_VIEW_SETTINGS } from "../../PhotonInteractionsConstants.js";
 /**
  * ComptonScreenView.ts
  *
@@ -32,7 +31,7 @@ import {
 import { EquationNode } from "../../common/view/EquationNode.js";
 import { StringManager } from "../../i18n/StringManager.js";
 import PhotonInteractionsColors from "../../PhotonInteractionsColors.js";
-import { COMPTON, CONTROL_WIDTH, FONTS, SCREEN_VIEW_MARGIN } from "../../PhotonInteractionsConstants.js";
+import { COMPTON, COMPTON_VIEW, CONTROL_WIDTH, FONTS, SCREEN_VIEW_MARGIN } from "../../PhotonInteractionsConstants.js";
 import type { ComptonModel } from "../model/ComptonModel.js";
 import { ComptonChartsNode } from "./ComptonChartsNode.js";
 import { COLLISION_WIDTH, ComptonCollisionNode } from "./ComptonCollisionNode.js";
@@ -42,7 +41,7 @@ import { MomentumTriangleNode, TRIANGLE_WIDTH } from "./MomentumTriangleNode.js"
 export type ComptonScreenViewOptions = ScreenViewOptions;
 
 const READOUT_WIDTH = TRIANGLE_WIDTH - 24;
-const PRESET_BUTTON_TEXT_WIDTH: number = COMPTON_SCREEN_VIEW_SETTINGS.PRESET_BUTTON_TEXT_WIDTH;
+const PRESET_BUTTON_TEXT_WIDTH: number = COMPTON_VIEW.PRESET_BUTTON_TEXT_WIDTH;
 
 export class ComptonScreenView extends ScreenView {
   public constructor(
@@ -69,8 +68,8 @@ export class ComptonScreenView extends ScreenView {
 
     const charts = new ComptonChartsNode(model);
     // The charts' own left edge is the y-axis label; the frame sits 45 px inside it.
-    charts.left = collision.left + COMPTON_SCREEN_VIEW_SETTINGS.CONSTRUCTOR_LEFT_OFFSET;
-    charts.top = collision.bottom + COMPTON_SCREEN_VIEW_SETTINGS.CONSTRUCTOR_TOP_OFFSET;
+    charts.left = collision.left + COMPTON_VIEW.CHARTS_LEFT_INSET;
+    charts.top = collision.bottom + COMPTON_VIEW.CONTENT_TOP_GAP;
 
     // ── Middle: triangle, measurements, equation, detector controls ─────────────
     const triangle = new MomentumTriangleNode(model);
@@ -78,20 +77,17 @@ export class ComptonScreenView extends ScreenView {
     triangle.top = collision.top;
 
     const energyText = (property: TReadOnlyProperty<number>): TReadOnlyProperty<string> =>
-      new DerivedProperty([property], (value) => formatEnergy(value, COMPTON_SCREEN_VIEW_SETTINGS.ENERGY_TEXT_DIGITS));
+      new DerivedProperty([property], (value) => formatEnergy(value, COMPTON_VIEW.ENERGY_TEXT_DIGITS));
     const wavelengthText = (property: TReadOnlyProperty<number>): TReadOnlyProperty<string> =>
-      new DerivedProperty([property], (value) =>
-        formatWavelength(value, COMPTON_SCREEN_VIEW_SETTINGS.WAVELENGTH_TEXT_DIGITS),
-      );
+      new DerivedProperty([property], (value) => formatWavelength(value, COMPTON_VIEW.WAVELENGTH_TEXT_DIGITS));
     const fractionalShiftProperty = new DerivedProperty(
       [model.shiftProperty, model.wavelengthProperty],
-      (shift, wavelength) =>
-        formatSignificant(shift / wavelength, COMPTON_SCREEN_VIEW_SETTINGS.FRACTIONAL_SHIFT_PROPERTY_DIGITS),
+      (shift, wavelength) => formatSignificant(shift / wavelength, COMPTON_VIEW.FRACTIONAL_SHIFT_DIGITS),
     );
     const readouts = new PhotonInteractionsPanel(
       new VBox({
         align: "left",
-        spacing: COMPTON_SCREEN_VIEW_SETTINGS.READOUTS_SPACING,
+        spacing: COMPTON_VIEW.READOUTS_SPACING,
         children: [
           createSectionHeader(strings.readoutsHeadingStringProperty),
           createReadoutRow(
@@ -155,7 +151,7 @@ export class ComptonScreenView extends ScreenView {
       TRIANGLE_WIDTH,
     );
     equation.left = triangle.left;
-    equation.top = readouts.bottom + COMPTON_SCREEN_VIEW_SETTINGS.CONSTRUCTOR_TOP_OFFSET;
+    equation.top = readouts.bottom + COMPTON_VIEW.CONTENT_TOP_GAP;
 
     const fireCheckbox = createCheckbox(
       model.firingProperty,
@@ -177,10 +173,10 @@ export class ComptonScreenView extends ScreenView {
     );
     const detectorControls = new VBox({
       align: "left",
-      spacing: COMPTON_SCREEN_VIEW_SETTINGS.DETECTOR_CONTROLS_SPACING,
+      spacing: COMPTON_VIEW.DETECTOR_CONTROLS_SPACING,
       children: [
         new HBox({
-          spacing: COMPTON_SCREEN_VIEW_SETTINGS.CONSTRUCTOR_DETECTOR_CONTROLS_SPACING,
+          spacing: COMPTON_VIEW.DETECTOR_CONTROLS_INNER_SPACING,
           children: [fireCheckbox, clearButton],
         }),
         eventsText,
@@ -194,22 +190,19 @@ export class ComptonScreenView extends ScreenView {
     const energyValueProperty = new DerivedProperty(
       [model.energyProperty, model.wavelengthProperty],
       (energy, wavelength) =>
-        `${formatEnergy(energy, COMPTON_SCREEN_VIEW_SETTINGS.ENERGY_VALUE_PROPERTY_DIGITS)}   λ = ${formatWavelength(wavelength, COMPTON_SCREEN_VIEW_SETTINGS.ENERGY_VALUE_PROPERTY_DIGITS)}`,
+        `${formatEnergy(energy, COMPTON_VIEW.ENERGY_VALUE_DIGITS)}   λ = ${formatWavelength(wavelength, COMPTON_VIEW.ENERGY_VALUE_DIGITS)}`,
     );
     const energySlider = new HSlider(
       model.logEnergyProperty,
       new Range(COMPTON.LOG_ENERGY_MIN, COMPTON.LOG_ENERGY_MAX),
       {
-        trackSize: new Dimension2(CONTROL_WIDTH - 20, COMPTON_SCREEN_VIEW_SETTINGS.ENERGY_SLIDER_HEIGHT),
-        thumbSize: new Dimension2(
-          COMPTON_SCREEN_VIEW_SETTINGS.ENERGY_SLIDER_WIDTH,
-          COMPTON_SCREEN_VIEW_SETTINGS.ENERGY_SLIDER_WIDTH_DIMENSION2_HEIGHT,
-        ),
+        trackSize: new Dimension2(CONTROL_WIDTH - 20, COMPTON_VIEW.ENERGY_SLIDER_HEIGHT),
+        thumbSize: new Dimension2(COMPTON_VIEW.ENERGY_SLIDER_WIDTH, COMPTON_VIEW.ENERGY_SLIDER_THUMB_HEIGHT),
         thumbFill: PhotonInteractionsColors.accentColorProperty,
         trackFillEnabled: PhotonInteractionsColors.textColorProperty,
-        keyboardStep: COMPTON_SCREEN_VIEW_SETTINGS.ENERGY_SLIDER_KEYBOARD_STEP,
-        shiftKeyboardStep: COMPTON_SCREEN_VIEW_SETTINGS.ENERGY_SLIDER_SHIFT_KEYBOARD_STEP,
-        pageKeyboardStep: COMPTON_SCREEN_VIEW_SETTINGS.ENERGY_SLIDER_PAGE_KEYBOARD_STEP,
+        keyboardStep: COMPTON_VIEW.ENERGY_SLIDER_KEYBOARD_STEP,
+        shiftKeyboardStep: COMPTON_VIEW.ENERGY_SLIDER_SHIFT_KEYBOARD_STEP,
+        pageKeyboardStep: COMPTON_VIEW.ENERGY_SLIDER_PAGE_KEYBOARD_STEP,
         accessibleName: a11y.energyStringProperty,
         accessibleHelpText: a11y.energyHelpStringProperty,
         pdomCreateAriaValueText: () => energyValueProperty.value,
@@ -247,7 +240,7 @@ export class ComptonScreenView extends ScreenView {
     const sourcePanel = new PhotonInteractionsPanel(
       new VBox({
         align: "left",
-        spacing: COMPTON_SCREEN_VIEW_SETTINGS.SOURCE_PANEL_SPACING,
+        spacing: COMPTON_VIEW.SOURCE_PANEL_SPACING,
         children: [
           createSectionHeader(strings.sourceHeadingStringProperty),
           new Text(energyValueProperty, {
@@ -257,16 +250,16 @@ export class ComptonScreenView extends ScreenView {
           }),
           energySlider,
           new HBox({
-            spacing: COMPTON_SCREEN_VIEW_SETTINGS.CONSTRUCTOR_SOURCE_PANEL_SPACING,
+            spacing: COMPTON_VIEW.SOURCE_PRESET_SPACING,
             children: presetButtons.slice(0, 2),
           }),
           new HBox({
-            spacing: COMPTON_SCREEN_VIEW_SETTINGS.CONSTRUCTOR_SOURCE_PANEL_SPACING,
+            spacing: COMPTON_VIEW.SOURCE_PRESET_SPACING,
             children: presetButtons.slice(2, 4),
           }),
         ],
       }),
-      { minWidth: CONTROL_WIDTH + COMPTON_SCREEN_VIEW_SETTINGS.SOURCE_PANEL_MIN_WIDTH_OFFSET },
+      { minWidth: CONTROL_WIDTH + COMPTON_VIEW.SOURCE_PANEL_WIDTH_PAD },
     );
 
     const angleControl = createNumberControl(
@@ -289,10 +282,10 @@ export class ComptonScreenView extends ScreenView {
     const scatteringPanel = new PhotonInteractionsPanel(
       new VBox({
         align: "left",
-        spacing: COMPTON_SCREEN_VIEW_SETTINGS.SCATTERING_PANEL_SPACING,
+        spacing: COMPTON_VIEW.SCATTERING_PANEL_SPACING,
         children: [createSectionHeader(strings.scatteringHeadingStringProperty), angleControl, boundCheckbox],
       }),
-      { minWidth: CONTROL_WIDTH + COMPTON_SCREEN_VIEW_SETTINGS.SCATTERING_PANEL_MIN_WIDTH_OFFSET },
+      { minWidth: CONTROL_WIDTH + COMPTON_VIEW.SCATTERING_PANEL_WIDTH_PAD },
     );
 
     const graphRadio = createRadioButtonGroup(
@@ -319,14 +312,14 @@ export class ComptonScreenView extends ScreenView {
     const graphPanel = new PhotonInteractionsPanel(
       new VBox({
         align: "left",
-        spacing: COMPTON_SCREEN_VIEW_SETTINGS.GRAPH_PANEL_SPACING,
+        spacing: COMPTON_VIEW.GRAPH_PANEL_SPACING,
         children: [createSectionHeader(strings.graphHeadingStringProperty), graphRadio],
       }),
-      { minWidth: CONTROL_WIDTH + COMPTON_SCREEN_VIEW_SETTINGS.GRAPH_PANEL_MIN_WIDTH_OFFSET },
+      { minWidth: CONTROL_WIDTH + COMPTON_VIEW.GRAPH_PANEL_WIDTH_PAD },
     );
 
     const rightColumn = new VBox({
-      spacing: COMPTON_SCREEN_VIEW_SETTINGS.RIGHT_COLUMN_SPACING,
+      spacing: COMPTON_VIEW.RIGHT_COLUMN_SPACING,
       align: "right",
       children: [sourcePanel, scatteringPanel, graphPanel],
     });

@@ -1,4 +1,3 @@
-import { MOMENTUM_TRIANGLE_NODE_SETTINGS } from "../../PhotonInteractionsConstants.js";
 /**
  * MomentumTriangleNode.ts
  *
@@ -15,13 +14,13 @@ import { Node, Rectangle, Text } from "scenerystack/scenery";
 import { ArrowNode } from "scenerystack/scenery-phet";
 import { StringManager } from "../../i18n/StringManager.js";
 import PhotonInteractionsColors from "../../PhotonInteractionsColors.js";
-import { FONTS } from "../../PhotonInteractionsConstants.js";
+import { COMPTON_VIEW, FONTS } from "../../PhotonInteractionsConstants.js";
 import type { ComptonModel } from "../model/ComptonModel.js";
 
-export const TRIANGLE_WIDTH: number = MOMENTUM_TRIANGLE_NODE_SETTINGS.TRIANGLE_WIDTH;
-const TRIANGLE_HEIGHT: number = MOMENTUM_TRIANGLE_NODE_SETTINGS.TRIANGLE_HEIGHT;
+export const TRIANGLE_WIDTH: number = COMPTON_VIEW.TRIANGLE_WIDTH;
+const TRIANGLE_HEIGHT: number = COMPTON_VIEW.TRIANGLE_HEIGHT;
 
-const INCIDENT_LENGTH: number = MOMENTUM_TRIANGLE_NODE_SETTINGS.INCIDENT_LENGTH;
+const INCIDENT_LENGTH: number = COMPTON_VIEW.TRIANGLE_INCIDENT_LENGTH;
 const TAIL = new Vector2(TRIANGLE_WIDTH / 2 - 8, TRIANGLE_HEIGHT - 26);
 
 export class MomentumTriangleNode extends Node {
@@ -32,23 +31,23 @@ export class MomentumTriangleNode extends Node {
     const frame = new Rectangle(0, 0, TRIANGLE_WIDTH, TRIANGLE_HEIGHT, {
       fill: PhotonInteractionsColors.chartBackgroundColorProperty,
       stroke: PhotonInteractionsColors.panelBorderColorProperty,
-      cornerRadius: MOMENTUM_TRIANGLE_NODE_SETTINGS.FRAME_CORNER_RADIUS,
+      cornerRadius: COMPTON_VIEW.TRIANGLE_FRAME_CORNER_RADIUS,
     });
     const title = new Text(strings.triangleTitleStringProperty, {
       font: FONTS.CHART_TITLE,
       fill: PhotonInteractionsColors.textColorProperty,
-      maxWidth: TRIANGLE_WIDTH - MOMENTUM_TRIANGLE_NODE_SETTINGS.TITLE_MAX_WIDTH_OFFSET,
-      left: MOMENTUM_TRIANGLE_NODE_SETTINGS.TITLE_LEFT,
-      top: MOMENTUM_TRIANGLE_NODE_SETTINGS.TITLE_TOP,
+      maxWidth: TRIANGLE_WIDTH - COMPTON_VIEW.TRIANGLE_TITLE_WIDTH_INSET,
+      left: COMPTON_VIEW.TRIANGLE_TITLE_LEFT,
+      top: COMPTON_VIEW.TRIANGLE_TITLE_TOP,
     });
 
     const arrow = (fill: typeof PhotonInteractionsColors.textColorProperty): ArrowNode =>
       new ArrowNode(0, 0, 1, 0, {
         fill,
         stroke: null,
-        tailWidth: MOMENTUM_TRIANGLE_NODE_SETTINGS.ARROW_TAIL_WIDTH,
-        headWidth: MOMENTUM_TRIANGLE_NODE_SETTINGS.ARROW_HEAD_WIDTH,
-        headHeight: MOMENTUM_TRIANGLE_NODE_SETTINGS.ARROW_HEAD_HEIGHT,
+        tailWidth: COMPTON_VIEW.TRIANGLE_ARROW_TAIL_WIDTH,
+        headWidth: COMPTON_VIEW.TRIANGLE_ARROW_HEAD_WIDTH,
+        headHeight: COMPTON_VIEW.TRIANGLE_ARROW_HEAD_HEIGHT,
       });
     const incident = arrow(PhotonInteractionsColors.photonColorProperty);
     const scattered = arrow(PhotonInteractionsColors.scatteredPhotonColorProperty);
@@ -60,7 +59,7 @@ export class MomentumTriangleNode extends Node {
       new Text(text, { font: FONTS.PARTICLE_LABEL, fill });
     const incidentLabel = label("h/λ", PhotonInteractionsColors.photonColorProperty);
     incidentLabel.centerX = TAIL.x + INCIDENT_LENGTH / 2;
-    incidentLabel.top = TAIL.y + MOMENTUM_TRIANGLE_NODE_SETTINGS.CONSTRUCTOR_TOP_OFFSET;
+    incidentLabel.top = TAIL.y + COMPTON_VIEW.TRIANGLE_INCIDENT_LABEL_TOP_GAP;
     const scatteredLabel = label("h/λ′", PhotonInteractionsColors.scatteredPhotonColorProperty);
     const electronLabel = label("pₑ", PhotonInteractionsColors.electronColorProperty);
 

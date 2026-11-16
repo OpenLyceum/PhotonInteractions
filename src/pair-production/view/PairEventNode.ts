@@ -1,4 +1,3 @@
-import { PAIR_EVENT_NODE_SETTINGS } from "../../PhotonInteractionsConstants.js";
 /**
  * PairEventNode.ts
  *
@@ -20,22 +19,22 @@ import type { FourMomentum } from "../../common/model/fourMomentum.js";
 import { PhotonArrowNode } from "../../common/view/PhotonArrowNode.js";
 import { StringManager } from "../../i18n/StringManager.js";
 import PhotonInteractionsColors from "../../PhotonInteractionsColors.js";
-import { FONTS, PAIR } from "../../PhotonInteractionsConstants.js";
+import { FONTS, PAIR, PAIR_VIEW } from "../../PhotonInteractionsConstants.js";
 import type { PairProductionModel, PairStatus } from "../model/PairProductionModel.js";
 import { trackRadiusMm } from "../model/pairProduction.js";
 
-const EVENT_WIDTH: number = PAIR_EVENT_NODE_SETTINGS.EVENT_WIDTH;
-const EVENT_HEIGHT: number = PAIR_EVENT_NODE_SETTINGS.EVENT_HEIGHT;
+const EVENT_WIDTH: number = PAIR_VIEW.EVENT_WIDTH;
+const EVENT_HEIGHT: number = PAIR_VIEW.EVENT_HEIGHT;
 
-const VERTEX = new Vector2(PAIR_EVENT_NODE_SETTINGS.VERTEX_X, PAIR_EVENT_NODE_SETTINGS.VERTEX_Y);
-const PHOTON_START_X: number = PAIR_EVENT_NODE_SETTINGS.PHOTON_START_X;
+const VERTEX = new Vector2(PAIR_VIEW.VERTEX_X, PAIR_VIEW.VERTEX_Y);
+const PHOTON_START_X: number = PAIR_VIEW.PHOTON_START_X;
 /** Fraction of the animation the photon spends arriving. */
-const ARRIVAL: number = PAIR_EVENT_NODE_SETTINGS.ARRIVAL;
-const PIXELS_PER_MM: number = PAIR_EVENT_NODE_SETTINGS.PIXELS_PER_MM;
-const STRAIGHT_TRACK_LENGTH: number = PAIR_EVENT_NODE_SETTINGS.STRAIGHT_TRACK_LENGTH;
-const MAX_TRACK_LENGTH: number = PAIR_EVENT_NODE_SETTINGS.MAX_TRACK_LENGTH;
-const TRACK_STEP: number = PAIR_EVENT_NODE_SETTINGS.TRACK_STEP;
-const PHOTON_WIGGLE_PX: number = PAIR_EVENT_NODE_SETTINGS.PHOTON_WIGGLE_PX;
+const ARRIVAL: number = PAIR_VIEW.ARRIVAL_FRACTION;
+const PIXELS_PER_MM: number = PAIR_VIEW.PIXELS_PER_MM;
+const STRAIGHT_TRACK_LENGTH: number = PAIR_VIEW.STRAIGHT_TRACK_LENGTH;
+const MAX_TRACK_LENGTH: number = PAIR_VIEW.MAX_TRACK_LENGTH;
+const TRACK_STEP: number = PAIR_VIEW.TRACK_STEP;
+const PHOTON_WIGGLE_PX: number = PAIR_VIEW.PHOTON_WIGGLE_PX;
 
 /**
  * A track leaving the vertex at `angle` (radians, counter-clockwise on screen being
@@ -69,18 +68,18 @@ export class PairEventNode extends Node {
     const frame = new Rectangle(0, 0, EVENT_WIDTH, EVENT_HEIGHT, {
       fill: PhotonInteractionsColors.chartBackgroundColorProperty,
       stroke: PhotonInteractionsColors.panelBorderColorProperty,
-      cornerRadius: PAIR_EVENT_NODE_SETTINGS.FRAME_CORNER_RADIUS,
+      cornerRadius: PAIR_VIEW.EVENT_FRAME_CORNER_RADIUS,
     });
     const title = new Text(strings.eventTitleStringProperty, {
       font: FONTS.CHART_TITLE,
       fill: PhotonInteractionsColors.textColorProperty,
-      maxWidth: PAIR_EVENT_NODE_SETTINGS.TITLE_MAX_WIDTH,
-      left: PAIR_EVENT_NODE_SETTINGS.TITLE_LEFT,
-      top: PAIR_EVENT_NODE_SETTINGS.TITLE_TOP,
+      maxWidth: PAIR_VIEW.TITLE_MAX_WIDTH,
+      left: PAIR_VIEW.TITLE_LEFT,
+      top: PAIR_VIEW.TITLE_TOP,
     });
     const statusText = new Text("", {
       font: FONTS.CHART_TITLE,
-      maxWidth: EVENT_WIDTH - PAIR_EVENT_NODE_SETTINGS.STATUS_TEXT_MAX_WIDTH_OFFSET,
+      maxWidth: EVENT_WIDTH - PAIR_VIEW.STATUS_WIDTH_INSET,
     });
     const statusStrings: Record<PairStatus, TReadOnlyProperty<string>> = {
       below: strings.status.belowStringProperty,
@@ -100,12 +99,12 @@ export class PairEventNode extends Node {
           status === "allowed"
             ? PhotonInteractionsColors.restEnergyColorProperty
             : PhotonInteractionsColors.limitColorProperty;
-        statusText.right = EVENT_WIDTH - PAIR_EVENT_NODE_SETTINGS.CONSTRUCTOR_RIGHT_OFFSET;
-        statusText.top = PAIR_EVENT_NODE_SETTINGS.TOP_TOP;
+        statusText.right = EVENT_WIDTH - PAIR_VIEW.STATUS_RIGHT_INSET;
+        statusText.top = PAIR_VIEW.STATUS_TOP;
       },
     );
 
-    const nucleus = new Circle(PAIR_EVENT_NODE_SETTINGS.NUCLEUS_RADIUS, {
+    const nucleus = new Circle(PAIR_VIEW.NUCLEUS_RADIUS, {
       fill: PhotonInteractionsColors.nucleusColorProperty,
       center: VERTEX,
     });
@@ -118,24 +117,24 @@ export class PairEventNode extends Node {
       nucleusLabel.visible = nucleus.visible;
       nucleusLabel.string = surroundings === "lead" ? "Pb" : "C";
       nucleusLabel.right = VERTEX.x - 13;
-      nucleusLabel.top = VERTEX.y + PAIR_EVENT_NODE_SETTINGS.CONSTRUCTOR_TOP_OFFSET;
+      nucleusLabel.top = VERTEX.y + PAIR_VIEW.NUCLEUS_LABEL_TOP_GAP;
     });
 
     const fieldLabel = new Text(strings.fieldLabelStringProperty, {
       font: FONTS.TICK_LABEL,
       fill: PhotonInteractionsColors.secondaryTextColorProperty,
-      maxWidth: PAIR_EVENT_NODE_SETTINGS.FIELD_LABEL_MAX_WIDTH,
+      maxWidth: PAIR_VIEW.FIELD_LABEL_MAX_WIDTH,
       visibleProperty: model.fieldOnProperty,
     });
     const fieldSymbol = new Text("⊙", {
       font: FONTS.BIG_LABEL,
       fill: PhotonInteractionsColors.secondaryTextColorProperty,
       visibleProperty: model.fieldOnProperty,
-      left: PAIR_EVENT_NODE_SETTINGS.FIELD_SYMBOL_LEFT,
-      bottom: EVENT_HEIGHT - PAIR_EVENT_NODE_SETTINGS.FIELD_SYMBOL_BOTTOM_OFFSET,
+      left: PAIR_VIEW.FIELD_SYMBOL_LEFT,
+      bottom: EVENT_HEIGHT - PAIR_VIEW.FIELD_SYMBOL_BOTTOM_GAP,
     });
     const placeFieldLabel = (): void => {
-      fieldLabel.left = fieldSymbol.right + PAIR_EVENT_NODE_SETTINGS.PLACE_FIELD_LABEL_LEFT_OFFSET;
+      fieldLabel.left = fieldSymbol.right + PAIR_VIEW.FIELD_LABEL_LEFT_GAP;
       fieldLabel.centerY = fieldSymbol.centerY;
     };
     fieldLabel.localBoundsProperty.lazyLink(placeFieldLabel);
@@ -143,10 +142,10 @@ export class PairEventNode extends Node {
 
     const photon = new PhotonArrowNode(PhotonInteractionsColors.photonColorProperty);
     const photonLabel = new Text("γ", { font: FONTS.BIG_LABEL, fill: PhotonInteractionsColors.photonColorProperty });
-    photonLabel.centerX = PAIR_EVENT_NODE_SETTINGS.CENTER_X_CENTER_X;
-    photonLabel.bottom = VERTEX.y - PAIR_EVENT_NODE_SETTINGS.CONSTRUCTOR_BOTTOM_OFFSET;
+    photonLabel.centerX = PAIR_VIEW.FIELD_SYMBOL_CENTER_NUDGE;
+    photonLabel.bottom = VERTEX.y - PAIR_VIEW.PHOTON_LABEL_BOTTOM_GAP;
     const track = (stroke: typeof PhotonInteractionsColors.electronColorProperty): Path =>
-      new Path(null, { stroke, lineWidth: PAIR_EVENT_NODE_SETTINGS.TRACK_LINE_WIDTH, lineCap: "round" });
+      new Path(null, { stroke, lineWidth: PAIR_VIEW.TRACK_LINE_WIDTH, lineCap: "round" });
     const electronTrack = track(PhotonInteractionsColors.electronColorProperty);
     const positronTrack = track(PhotonInteractionsColors.positronColorProperty);
     const particleLabel = (text: string, fill: typeof PhotonInteractionsColors.electronColorProperty): Text =>
@@ -219,8 +218,8 @@ export class PairEventNode extends Node {
       0,
       EVENT_WIDTH,
       EVENT_HEIGHT,
-      PAIR_EVENT_NODE_SETTINGS.CLIP_AREA_CORNER_X,
-      PAIR_EVENT_NODE_SETTINGS.CLIP_AREA_CORNER_Y,
+      PAIR_VIEW.EVENT_CLIP_CORNER_X,
+      PAIR_VIEW.EVENT_CLIP_CORNER_Y,
     );
   }
 }

@@ -1,4 +1,3 @@
-import { MOSELEY_CHART_NODE_SETTINGS } from "../../PhotonInteractionsConstants.js";
 /**
  * MoseleyChartNode.ts
  *
@@ -15,15 +14,15 @@ import { Circle, Node, Text, VBox } from "scenerystack/scenery";
 import { ChartFrameNode } from "../../common/view/ChartFrameNode.js";
 import { StringManager } from "../../i18n/StringManager.js";
 import PhotonInteractionsColors from "../../PhotonInteractionsColors.js";
-import { FONTS } from "../../PhotonInteractionsConstants.js";
+import { FONTS, XRAY_VIEW } from "../../PhotonInteractionsConstants.js";
 import type { XRayTubeModel } from "../model/XRayTubeModel.js";
 import { moseleyKAlphaEnergy, moseleyOrdinate } from "../model/xraySpectrum.js";
 import { XRAY_TARGETS } from "../model/xrayTargets.js";
 
-const WIDTH: number = MOSELEY_CHART_NODE_SETTINGS.WIDTH;
-const HEIGHT: number = MOSELEY_CHART_NODE_SETTINGS.HEIGHT;
-const Z_MAX: number = MOSELEY_CHART_NODE_SETTINGS.Z_MAX;
-const ORDINATE_MAX: number = MOSELEY_CHART_NODE_SETTINGS.ORDINATE_MAX;
+const WIDTH: number = XRAY_VIEW.MOSELEY_WIDTH;
+const HEIGHT: number = XRAY_VIEW.MOSELEY_HEIGHT;
+const Z_MAX: number = XRAY_VIEW.Z_MAX;
+const ORDINATE_MAX: number = XRAY_VIEW.ORDINATE_MAX;
 
 export class MoseleyChartNode extends Node {
   public constructor(model: XRayTubeModel) {
@@ -45,11 +44,8 @@ export class MoseleyChartNode extends Node {
       [new Vector2(1, 0), new Vector2(Z_MAX, moseleyOrdinate(moseleyKAlphaEnergy(Z_MAX)))],
       {
         stroke: PhotonInteractionsColors.secondaryTextColorProperty,
-        lineWidth: MOSELEY_CHART_NODE_SETTINGS.LAW_LINE_WIDTH,
-        lineDash: [
-          MOSELEY_CHART_NODE_SETTINGS.LAW_LINE_DASH_DASH,
-          MOSELEY_CHART_NODE_SETTINGS.CONSTRUCTOR_LAW_LINE_DASH_DASH,
-        ],
+        lineWidth: XRAY_VIEW.MOSELEY_LAW_LINE_WIDTH,
+        lineDash: [XRAY_VIEW.MOSELEY_LAW_DASH, XRAY_VIEW.MOSELEY_LAW_GAP],
       },
     );
     chart.plotLayer.children = [law];
@@ -57,11 +53,11 @@ export class MoseleyChartNode extends Node {
     const lawLabel = new Text(strings.moseleyLawStringProperty, {
       font: FONTS.TICK_LABEL,
       fill: PhotonInteractionsColors.secondaryTextColorProperty,
-      maxWidth: MOSELEY_CHART_NODE_SETTINGS.LAW_LABEL_MAX_WIDTH,
+      maxWidth: XRAY_VIEW.MOSELEY_LAW_LABEL_MAX_WIDTH,
     });
     const placeLawLabel = (): void => {
-      lawLabel.left = MOSELEY_CHART_NODE_SETTINGS.LEFT_LEFT;
-      lawLabel.top = MOSELEY_CHART_NODE_SETTINGS.TOP_TOP;
+      lawLabel.left = XRAY_VIEW.MOSELEY_LEFT_INSET;
+      lawLabel.top = XRAY_VIEW.MOSELEY_TOP_INSET;
     };
     lawLabel.localBoundsProperty.lazyLink(placeLawLabel);
     placeLawLabel();
@@ -71,10 +67,10 @@ export class MoseleyChartNode extends Node {
         transform.modelToViewX(target.atomicNumber),
         transform.modelToViewY(moseleyOrdinate(target.kAlphaKeV)),
       );
-      const dot = new Circle(MOSELEY_CHART_NODE_SETTINGS.DOT_RADIUS, { center: position });
+      const dot = new Circle(XRAY_VIEW.MOSELEY_DOT_RADIUS, { center: position });
       const symbol = new Text(target.symbol, { font: FONTS.TICK_LABEL });
       symbol.centerX = position.x + 2;
-      symbol.top = position.y + MOSELEY_CHART_NODE_SETTINGS.POINTS_TOP_OFFSET;
+      symbol.top = position.y + XRAY_VIEW.MOSELEY_POINT_TOP_GAP;
       return { target, dot, symbol };
     });
     model.targetProperty.link((current) => {
@@ -84,7 +80,7 @@ export class MoseleyChartNode extends Node {
           ? PhotonInteractionsColors.photonColorProperty
           : PhotonInteractionsColors.secondaryTextColorProperty;
         point.dot.fill = paint;
-        point.dot.radius = selected ? MOSELEY_CHART_NODE_SETTINGS.CONSTRUCTOR_RADIUS : 4;
+        point.dot.radius = selected ? XRAY_VIEW.MOSELEY_SELECTED_RADIUS : 4;
         point.symbol.fill = paint;
       }
     });
@@ -93,12 +89,12 @@ export class MoseleyChartNode extends Node {
     this.children = [
       new VBox({
         align: "left",
-        spacing: MOSELEY_CHART_NODE_SETTINGS.CHILDREN_SPACING,
+        spacing: XRAY_VIEW.MOSELEY_CHILDREN_SPACING,
         children: [
           new Text(strings.moseleyTitleStringProperty, {
             font: FONTS.CHART_TITLE,
             fill: PhotonInteractionsColors.textColorProperty,
-            maxWidth: WIDTH + MOSELEY_CHART_NODE_SETTINGS.CONSTRUCTOR_MAX_WIDTH_OFFSET,
+            maxWidth: WIDTH + XRAY_VIEW.MOSELEY_TITLE_WIDTH_PAD,
           }),
           chart,
         ],

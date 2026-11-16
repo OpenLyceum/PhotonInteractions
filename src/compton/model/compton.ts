@@ -1,4 +1,3 @@
-import { COMPTON_NUMERICS } from "../../PhotonInteractionsConstants.js";
 /**
  * compton.ts
  *
@@ -12,7 +11,6 @@ import { COMPTON_NUMERICS } from "../../PhotonInteractionsConstants.js";
  * and the recoil direction cot φ = (1 + E/mc²) tan(θ/2). How *often* each angle
  * occurs is not fixed by conservation laws; it is the Klein–Nishina cross-section.
  */
-
 import { COMPTON, PHYSICS } from "../../PhotonInteractionsConstants.js";
 
 const ELECTRON: number = PHYSICS.ELECTRON_REST_ENERGY_KEV;
@@ -90,7 +88,7 @@ export const kleinNishinaRecoilSpectrum = (energy: number, kinetic: number): num
  * @param random - a source of uniform numbers on [0, 1), passed in so tests can seed it
  */
 export const sampleScatteringAngle = (energy: number, random: () => number): number => {
-  for (let attempt = 0; attempt < COMPTON_NUMERICS.MAX_REJECTION_ATTEMPTS; attempt++) {
+  for (let attempt = 0; attempt < COMPTON.MAX_REJECTION_ATTEMPTS; attempt++) {
     const theta = Math.acos(2 * random() - 1);
     if (random() < kleinNishina(energy, theta)) {
       return theta;
@@ -133,7 +131,7 @@ export const spectrometerIntensity = (
   const fraction = includeBound ? shiftedFraction(wavelengthPm, theta) : 1;
   return (
     (1 - fraction) * gaussian(shiftPm, sigma) +
-    fraction * gaussian(shiftPm - comptonShift(theta), COMPTON_NUMERICS.SCATTERED_LINE_WIDTH_FACTOR * sigma)
+    fraction * gaussian(shiftPm - comptonShift(theta), COMPTON.SCATTERED_LINE_WIDTH_FACTOR * sigma)
   );
 };
 
@@ -153,7 +151,7 @@ export const detectorSpectrumFractions = (
   photopeakFraction: number,
   resolution: number,
 ): number[] => {
-  const perBin: number = COMPTON_NUMERICS.CONTINUUM_SAMPLES_PER_BIN;
+  const perBin: number = COMPTON.CONTINUUM_SAMPLES_PER_BIN;
   const n = bins * perBin;
   const step = (rangeFactor * energy) / n;
   const ideal = new Array<number>(n).fill(0);
@@ -172,8 +170,8 @@ export const detectorSpectrumFractions = (
   ideal[peakIndex] = (ideal[peakIndex] ?? 0) + photopeakFraction;
 
   // Blur with the detector resolution.
-  const sigma = Math.max(COMPTON_NUMERICS.MIN_SIGMA_BINS, (resolution * energy) / step);
-  const reach = Math.ceil(COMPTON_NUMERICS.BROADENING_SIGMA_REACH * sigma);
+  const sigma = Math.max(COMPTON.MIN_SIGMA_BINS, (resolution * energy) / step);
+  const reach = Math.ceil(COMPTON.BROADENING_SIGMA_REACH * sigma);
   const kernel: number[] = [];
   let kernelSum = 0;
   for (let k = -reach; k <= reach; k++) {
