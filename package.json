@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
-  "description": "Photons as particles in four screens: Compton scattering with the momentum triangle, Compton's spectrometer and a detector's Compton edge; an X-ray tube's bremsstrahlung spectrum, Duane–Hunt limit and characteristic lines; pair production near a nucleus with energy and momentum budgets; and electron–positron annihilation with a PET scanner ring.",
+  "description": "Photons as particles in four screens: Compton scattering with the momentum triangle, Compton's spectrometer and a detector's Compton edge; an X-ray tube's bremsstrahlung spectrum, Duane\u2013Hunt limit and characteristic lines; pair production near a nucleus with energy and momentum budgets; and electron\u2013positron annihilation with a PET scanner ring.",
   "license": "AGPL-3.0-or-later",
   "repository": {
     "type": "git",
@@ -47,7 +47,8 @@
     "clean": "rm -rf dist",
     "prepare": "test \"$(git rev-parse --show-toplevel 2>/dev/null)\" = \"$PWD\" && git config core.hooksPath .githooks || true",
     "knip": "knip",
-    "test:architecture": "node --test tests/*.node-test.ts"
+    "test:architecture": "node --test tests/*.node-test.ts",
+    "test:soak": "npx playwright test tests/browser/memory-soak.spec.ts"
   },
   "dependencies": {
     "scenerystack": "^3.0.0"
