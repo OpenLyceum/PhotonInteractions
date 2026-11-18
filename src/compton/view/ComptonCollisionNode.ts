@@ -135,6 +135,8 @@ export class ComptonCollisionNode extends Node {
     // A generous invisible target, so a finger can grab it.
     detector.touchArea = detector.localBounds.dilated(COMPTON_VIEW.DETECTOR_TOUCH_DILATION);
     detector.mouseArea = detector.localBounds.dilated(COMPTON_VIEW.DETECTOR_MOUSE_DILATION);
+    // Pointer-only: dragging the detector. The angle NumberControl in ComptonScreenView is the
+    // keyboard path to the same angleDegreesProperty.
     detector.addInputListener(
       new DragListener({
         drag: (event) => {
