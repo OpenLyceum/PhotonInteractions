@@ -12,7 +12,7 @@
  */
 
 import { Multilink } from "scenerystack/axon";
-import { Vector2 } from "scenerystack/dot";
+import { roundSymmetric, Vector2 } from "scenerystack/dot";
 import { Shape } from "scenerystack/kite";
 import { StringUtils } from "scenerystack/phetcommon";
 import { Circle, Node, Path, Rectangle, Text } from "scenerystack/scenery";
@@ -217,7 +217,7 @@ export class XRayTubeNode extends Node {
   public step(dt: number): void {
     // Transit rate follows the electrons' final speed, with a floor so slow ones still move.
     this.phase = (this.phase + dt * (0.35 + 1.2 * this.model.electronBetaProperty.value)) % 1;
-    const count = Math.round(ELECTRONS_PER_MA * this.model.currentProperty.value);
+    const count = roundSymmetric(ELECTRONS_PER_MA * this.model.currentProperty.value);
     const gap = ANODE_X - CATHODE_X - 6;
     this.electrons.forEach((electron, i) => {
       electron.visible = i < count;

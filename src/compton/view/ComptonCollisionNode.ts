@@ -4,16 +4,16 @@
  * The collision as it looks in the lab: a photon comes in from the left and hits
  * an electron at rest; the photon leaves at θ with a longer wavelength and the
  * electron recoils at φ on the other side of the beam axis. The detector on the
- * arc can be dragged to set θ (the angle slider is its keyboard equivalent).
+ * arc can be dragged with the pointer or keyboard to set θ.
  *
  * The wiggles are drawn to scale with each other, not with the page: the
  * scattered photon's drawn wavelength is the incident one times λ′/λ.
  */
 
 import { Multilink } from "scenerystack/axon";
-import { Vector2 } from "scenerystack/dot";
+import { roundSymmetric, Vector2 } from "scenerystack/dot";
 import { Shape } from "scenerystack/kite";
-import { Circle, DragListener, Line, Node, Path, Rectangle, Text } from "scenerystack/scenery";
+import { Circle, DragListener, KeyboardDragListener, Line, Node, Path, Rectangle, Text } from "scenerystack/scenery";
 import { ArrowNode } from "scenerystack/scenery-phet";
 import { PhotonArrowNode } from "../../common/view/PhotonArrowNode.js";
 import { StringManager } from "../../i18n/StringManager.js";
@@ -34,8 +34,11 @@ const INCIDENT_WIGGLE_PX: number = COMPTON_VIEW.INCIDENT_WIGGLE_PX;
 const MAX_WIGGLE_PX: number = COMPTON_VIEW.MAX_WIGGLE_PX;
 const ELECTRON_ARROW_MIN: number = COMPTON_VIEW.ELECTRON_ARROW_MIN;
 const ELECTRON_ARROW_MAX: number = COMPTON_VIEW.ELECTRON_ARROW_MAX;
+const DETECTOR_KEYBOARD_STEP_DEG = 5;
 
 export class ComptonCollisionNode extends Node {
+  public readonly detector: Rectangle;
+
   public constructor(model: ComptonModel) {
     super();
     const strings = StringManager.getInstance().getComptonStrings();
@@ -130,27 +133,53 @@ export class ComptonCollisionNode extends Node {
         lineWidth: COMPTON_VIEW.DETECTOR_LINE_WIDTH,
         cornerRadius: COMPTON_VIEW.DETECTOR_CORNER_RADIUS,
         cursor: "pointer",
+        tagName: "div",
+        ariaRole: "application",
+        focusable: true,
+        accessibleName: strings.detectorDragNameStringProperty,
+        accessibleNameBehavior: (_node, nodeOptions, name) => ({ ...nodeOptions, ariaLabel: name }),
+        accessibleHelpText: strings.detectorDragHelpStringProperty,
       },
     );
+    this.detector = detector;
     // A generous invisible target, so a finger can grab it.
     detector.touchArea = detector.localBounds.dilated(COMPTON_VIEW.DETECTOR_TOUCH_DILATION);
     detector.mouseArea = detector.localBounds.dilated(COMPTON_VIEW.DETECTOR_MOUSE_DILATION);
-    // Pointer-only: dragging the detector. The angle NumberControl in ComptonScreenView is the
-    // keyboard path to the same angleDegreesProperty.
-    detector.addInputListener(
-      new DragListener({
-        drag: (event) => {
-          const point = this.globalToLocalPoint(event.pointer.point);
-          const dx = point.x - ORIGIN.x;
-          const dy = ORIGIN.y - point.y;
-          // Below the beam axis the nearest allowed angle is whichever end is closer.
-          const degrees = dy >= 0 ? (Math.atan2(dy, dx) * 180) / Math.PI : dx >= 0 ? 0 : 180;
-          model.angleDegreesProperty.value = Math.round(
-            Math.max(COMPTON.ANGLE_MIN_DEG, Math.min(COMPTON.ANGLE_MAX_DEG, degrees)),
-          );
+    const pointerDrag = new DragListener({
+      drag: (event) => {
+        const point = this.globalToLocalPoint(event.pointer.point);
+        const dx = point.x - ORIGIN.x;
+        const dy = ORIGIN.y - point.y;
+        // Below the beam axis the nearest allowed angle is whichever end is closer.
+        const degrees = dy >= 0 ? (Math.atan2(dy, dx) * 180) / Math.PI : dx >= 0 ? 0 : 180;
+        model.angleDegreesProperty.value = roundSymmetric(
+          Math.max(COMPTON.ANGLE_MIN_DEG, Math.min(COMPTON.ANGLE_MAX_DEG, degrees)),
+        );
+      },
+    });
+    const keyboardDrag = new KeyboardDragListener({
+      keyboardDragDirection: "leftRight",
+      dragDelta: DETECTOR_KEYBOARD_STEP_DEG,
+      shiftDragDelta: 1,
+      positionProperty: {
+        get value() {
+          return new Vector2(model.angleDegreesProperty.value, 0);
         },
-      }),
-    );
+        set value(next: Vector2) {
+          model.angleDegreesProperty.value = model.angleDegreesProperty.range.constrainValue(next.x);
+        },
+      },
+    });
+    detector.addInputListener(pointerDrag);
+    detector.addInputListener(keyboardDrag);
+    detector.addDisposable({
+      dispose: () => {
+        detector.removeInputListener(keyboardDrag);
+        detector.removeInputListener(pointerDrag);
+        keyboardDrag.dispose();
+        pointerDrag.dispose();
+      },
+    });
 
     Multilink.multilink(
       [
