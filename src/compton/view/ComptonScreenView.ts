@@ -347,6 +347,7 @@ export class ComptonScreenView extends ScreenView {
       resetAllButton,
       new Node({
         pdomOrder: [
+          collision.detector,
           energySlider,
           ...presetButtons,
           angleControl,

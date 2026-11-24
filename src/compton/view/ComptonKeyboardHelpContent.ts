@@ -7,14 +7,31 @@
 
 import {
   BasicActionsKeyboardHelpSection,
+  KeyboardHelpIconFactory,
+  KeyboardHelpSection,
+  KeyboardHelpSectionRow,
   SliderControlsKeyboardHelpSection,
   TwoColumnKeyboardHelpContent,
 } from "scenerystack/scenery-phet";
+import { StringManager } from "../../i18n/StringManager.js";
 
 export class ComptonKeyboardHelpContent extends TwoColumnKeyboardHelpContent {
   public constructor() {
+    const strings = StringManager.getInstance().getComptonStrings();
     super(
-      [new SliderControlsKeyboardHelpSection()],
+      [
+        new SliderControlsKeyboardHelpSection(),
+        new KeyboardHelpSection(strings.detectorDragTitleStringProperty, [
+          KeyboardHelpSectionRow.labelWithIconList(
+            strings.detectorDragHelpStringProperty,
+            [
+              KeyboardHelpIconFactory.leftRightOrADKeysRowIcon(),
+              KeyboardHelpIconFactory.shiftPlusIcon(KeyboardHelpIconFactory.leftRightOrADKeysRowIcon()),
+            ],
+            { labelInnerContent: strings.detectorDragHelpStringProperty, labelOptions: { lineWrap: 220 } },
+          ),
+        ]),
+      ],
       [new BasicActionsKeyboardHelpSection({ withCheckboxContent: true })],
     );
   }

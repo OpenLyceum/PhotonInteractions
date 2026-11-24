@@ -7,6 +7,7 @@
  */
 
 import type { Vector2 } from "scenerystack/dot";
+import { roundSymmetric } from "scenerystack/dot";
 import { Shape } from "scenerystack/kite";
 import { Node, Path, type TPaint } from "scenerystack/scenery";
 import { PHOTON_ARROW } from "../../PhotonInteractionsConstants.js";
@@ -44,7 +45,7 @@ export class PhotonArrowNode extends Node {
     const nx = -uy;
     const ny = ux;
     const waveLength = length - HEAD_LENGTH;
-    const halfCycles = Math.max(1, Math.round((2 * waveLength) / wavelengthPx));
+    const halfCycles = Math.max(1, roundSymmetric((2 * waveLength) / wavelengthPx));
     const k = (halfCycles * Math.PI) / waveLength;
 
     const shape = new Shape().moveTo(tail.x, tail.y);

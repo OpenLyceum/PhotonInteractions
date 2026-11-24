@@ -66,7 +66,7 @@ Standard fleet pattern. Per-screen a11y strings live under `a11y.<screenKey>` in
 reached via `StringManager.get<Screen>A11yStrings()`; visible strings via
 `get<Screen>Strings()` and `getCommonStrings()`. Every screen has a live `*ScreenSummaryContent`, a
 wrapper `Node` carrying `pdomOrder` (Reset All last), and a `*KeyboardHelpContent`. The Compton
-detector is pointer-draggable only; the angle slider is its keyboard equivalent. The PET tracer is
+detector supports pointer and keyboard dragging. The angle control adjusts the same value. The PET tracer is
 keyboard-draggable (`RichDragListener`) and announces its position on drag end. Do not rewrite a
 focused node's PDOM content during a drag: it drops focus.
 Full convention: [Baton/ACCESSIBILITY.md](https://github.com/OpenLyceum/Baton/blob/main/ACCESSIBILITY.md).

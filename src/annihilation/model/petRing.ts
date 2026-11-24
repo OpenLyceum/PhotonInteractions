@@ -8,7 +8,7 @@
  * the tracer. Pure functions: no scenery imports. Lengths in cm.
  */
 
-import { Vector2 } from "scenerystack/dot";
+import { roundSymmetric, Vector2 } from "scenerystack/dot";
 
 export type LineOfResponse = {
   /** Indices of the two detectors that fired. */
@@ -28,7 +28,7 @@ export const detectorPosition = (index: number, count: number, ringRadius: numbe
  * @internal Exported for unit tests; not part of the application API.
  */
 export const detectorIndexAtAngle = (angle: number, count: number): number => {
-  const index = Math.round((angle / (2 * Math.PI)) * count) % count;
+  const index = roundSymmetric((angle / (2 * Math.PI)) * count) % count;
   return index < 0 ? index + count : index;
 };
 
