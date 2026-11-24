@@ -24,8 +24,9 @@ const photonInteractionsQueryParameters = QueryStringMachine.getAll({
    * hides them, for a class that is about to derive them.
    */
   showEquations: {
-    type: "boolean",
+    type: "custom",
     defaultValue: true,
+    parse: (value: string | null): boolean => value !== "false",
     public: true,
   },
 });
